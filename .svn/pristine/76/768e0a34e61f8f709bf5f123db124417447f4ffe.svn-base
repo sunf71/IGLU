@@ -1,0 +1,32 @@
+/******************************************************************/
+/* igluOBJMaterial.cpp                                            */
+/* -----------------------                                        */
+/*                                                                */
+/* Defines a reader for OBJ material files                        */
+/*                                                                */
+/* Chris Wyman (10/20/2011)                                       */
+/******************************************************************/
+
+
+#include "iglu.h"
+#include "igluOBJMaterial.h"
+
+using namespace iglu;
+
+namespace { // anonymous namespace to hide globals inside this file
+	IGLUArray1D<IGLUTexture2D::Ptr>   g_matlTexture;
+	IGLUArray1D<IGLUOBJMaterial *>    g_matl;
+
+
+};  // End: anonymous namespace to hide globals inside this file
+
+
+
+
+IGLUOBJMaterialReader::IGLUOBJMaterialReader( char *filename ) : 
+	IGLUFileParser( filename )
+{
+
+}
+
+

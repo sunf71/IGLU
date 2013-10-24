@@ -1,0 +1,134 @@
+/******************************************************************/
+/* igluWidgetWindow.cpp                                           */
+/* -----------------------                                        */
+/*                                                                */
+/* A class encapuslating an FLTK window that can contain other    */
+/*     windows & widgets.                                         */
+/*                                                                */
+/*                                                                */
+/* Chris Wyman (02/21/2012)                                       */
+/******************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <FL/Fl_Hor_Value_Slider.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Hor_Slider.H>
+#include <FL/Fl_Box.H>
+#include "iglu.h"
+
+#include <gl/wglew.h>
+
+using namespace iglu;
+
+
+IGLUWidgetWindow::IGLUWidgetWindow( int width, int height, const char *title ) :
+	Fl_Double_Window( 25, 50, width, height, title ), 
+	m_isRunning(false), m_noResize(true),
+	m_currentY(10), m_labelOffset(20), m_betweenOffset(26)
+{
+	m_scroller = new Fl_Scroll( 0, 0, width, height );
+	m_scroller->type( Fl_Scroll::VERTICAL_ALWAYS );
+}
+
+IGLUWidgetWindow::~IGLUWidgetWindow()
+{
+	for (uint i=0; i < widgets.Size(); i++)
+		delete widgets[i];
+	delete m_scroller;
+}
+
+
+void IGLUWidgetWindow::CreateWindow( int argc, char **argv )
+{
+	//resizable( *m_scroller );
+	end();
+	show( argc, argv );  // Create the FLTK window	
+	m_isRunning = true;
+}
+
+
+void IGLUWidgetWindow::AddWidget( IGLUFloat *uiFloat )
+{
+	m_scroller->begin();
+	Fl_Box *box = new Fl_Box( 6, m_currentY, 1, 20, uiFloat->GetName() );
+	box->align(FL_ALIGN_RIGHT);
+	m_currentY += m_labelOffset;
+	widgets.Add( box );
+
+	Fl_Hor_Value_Slider *slider = new Fl_Hor_Value_Slider( 10, m_currentY, w()-40, 20 );
+	slider->align(FL_ALIGN_LEFT);
+	slider->value( double(uiFloat->GetValue()) );
+	slider->bounds( double(uiFloat->GetMinValue()), double(uiFloat->GetMaxValue()) );
+	slider->callback( IGLUFloat::FLTKCallback, (void *)uiFloat );
+
+	// This is a really ugly kludge to set the step size correctly.  Evidently, FLTK uses
+	//    the number of significant figures in the input to step() to determine how many
+	//    digits to print.  However, converting from a float->double introduces numerical
+	//    errors which give spurious "significant" digits, causing the slider text to
+	//    extend beyond the box and renders the display illegible.
+	// To get around this, we move 4 digits to the left of the decimal, round to the nearest
+	//    integer (the int(x+0.5)), then move 4 digits to the right of the decimal in a 
+	//    double precision format.
+	// This limits this approach to slider steps of 0.0001...  But this is all that is
+	//    feasibly legible in this particular slider box.
+	slider->step( int(double(uiFloat->GetDelta())*10000+0.5)/10000.0 );
+
+	m_scroller->end();
+	//resizable( *slider );
+
+	uiFloat->FLTKSetValuator( (void *)slider );
+	widgets.Add( slider );
+
+	m_currentY += m_betweenOffset;
+}
+
+void IGLUWidgetWindow::AddWidget( IGLUInt *uiInt )
+{
+	m_scroller->begin();
+	Fl_Box *box = new Fl_Box( 6, m_currentY, 1, 20, uiInt->GetName() );
+	box->align(FL_ALIGN_RIGHT);
+	m_currentY += m_labelOffset;
+	widgets.Add( box );
+
+	Fl_Hor_Value_Slider *slider = new Fl_Hor_Value_Slider( 10, m_currentY, w()-40, 20 );
+	slider->align(FL_ALIGN_LEFT);
+	slider->step( uiInt->GetDelta() );
+	slider->value( uiInt->GetValue() );
+	slider->bounds( uiInt->GetMinValue(), uiInt->GetMaxValue() );
+	slider->callback( IGLUInt::FLTKCallback, (void *)uiInt );
+	m_scroller->end();
+	//resizable( *slider );
+
+	uiInt->FLTKSetValuator( (void *)slider );
+	widgets.Add( slider );
+
+	m_currentY += m_betweenOffset;
+}
+
+void IGLUWidgetWindow::AddWidget( IGLUBool *uiBool )
+{
+	m_scroller->begin();
+	Fl_Check_Button *check = new Fl_Check_Button( 10, m_currentY, w()-40, 20, uiBool->GetName() );
+	check->callback( IGLUBool::FLTKCallback, (void *)uiBool );
+	check->value( uiBool->GetValue() ? 1 : 0 );
+	m_currentY += m_betweenOffset;
+
+	uiBool->FLTKSetValuator( (void *)check );
+	widgets.Add( check );
+}
+
+// If we close via the 'Esc' key, we want to kill the whole program...
+int IGLUWidgetWindow::handle( int event )
+{
+	switch( event ) 
+	{
+	// Check for 'Esc' --> Hard code to 'quit'
+	case FL_KEYBOARD:
+		if (Fl::event_text()[0] == 27)
+			exit(0);
+	}
+
+	return Fl_Double_Window::handle( event );
+}

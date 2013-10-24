@@ -1,0 +1,32 @@
+Important dependency information:
+
+IGLU requires the following:
+  * GLEW 1.7 or later, which includes OpenGL 4.2 API definitions.  On some
+    nasty Linux systems (Xubuntu), the packaged libglew may not be new enough,
+    so you will need to download and compile from source ("make;make install")
+    However, beware that some of these systems *also* do not store libGLEW in
+    standard locations, so "make install" may leave older versions around.
+    This may cause link errors (on OGL 4.2 functions) when trying to use IGLU.
+  * A graphics driver supporting OpenGL 4.2+ (if you just want to compile IGLU,
+    having GLEW 1.7+ is sufficient)
+  * FFmpeg for video functionality.  I used FFMpeg 0.9.1.  For Windows, the
+    headers and lib files are available on my graphics NAS
+    (Graphics_Group/Libraries/FFmpeg).  On Linux, FFmpeg 0.9.1 should be
+    downloaded as source (the binary distributions don't seem to include the 
+    headers and .a/.so files).  Compiling is out-of-the-box 
+    ("./configure;make;make install") as long as your system has yasm 
+    installed.  I've been able to use packaged yasm distributions (e.g.,
+    "apt-get install yasm" worked for me).
+  * For compiling the samples, you need GLUT or FreeGLUT.
+
+As of now, in the Makefile/Visual Studio project you need to manually specify 
+the location of your FFmpeg installation.  Ideally, this will go away once I/we
+have more time.
+
+LINUX USERS:  Please note, our development is mostly on Windows.  At this point
+we are not using a fancy build management system, so when new classes and their
+class files are added to the project, we may not add them into the Makefile.  
+Frequently the library will still compile (via 'make') but will not contain all
+the functionality of the Windows systems (e.g., some sample may fail to link
+due to missing classes).  Usually this is slovable by simply adding the files
+into the makefile's list of targets.

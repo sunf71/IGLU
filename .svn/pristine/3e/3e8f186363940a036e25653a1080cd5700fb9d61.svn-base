@@ -1,0 +1,74 @@
+#CMakeLists.txt for building iglu.lib. 
+#
+#Some important notes. For a list of dependencies see README.txt.
+#This file:
+#
+#	*looks for environment variables to dependencies, FLTK_INC_PATH 
+# 		FFMPEG_INC_PATH. If these are not defined then it will
+#		prompt the user to set them.
+#
+#	*recursively searches subdirectories for source and headers files,
+#		it does NOT need to be updated if new source files are added.
+#
+#To use this file:
+#
+#	(Out of source build) $: ccmake ../iglu-build-desktop ./		
+#	(Or in source build)  $: ccmake ./
+#
+#Ethan Kerzner, 10 Apr 2012
+
+#Require a certain version of Cmake
+#I picked this version arbitrarirly...
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.3 FATAL_ERROR)
+
+#Name the project
+PROJECT(iglu)
+
+#Recursively find source files matching the regex *.cpp
+FILE(GLOB_RECURSE SOURCES "*.cpp")
+
+#Recursively find header  files matching the regex *.h
+FILE(GLOB_RECURSE HEADERS "*.h")
+
+#Where does fltk live? Check for an environment variable
+SET(FLTK_INC_DIR $ENV{FLTK_INC_PATH} )
+
+#If we did not have an environment variable, then ask the user!
+IF( NOT FLTK_INC_DIR)
+
+	#The hint is useless because FLTK_INC_PATH is empty
+	#Without a hint Cmake will complain...
+	FIND_PATH(FLTK_INC_DIR HINT $ENV{FLTK_INC_PATH}) 
+
+ENDIF()
+
+#Set to include the fltk directory
+INCLUDE_DIRECTORIES( ${FLTK_INC_DIR} )
+
+#Where does ffmpeg live? Check for an environment variable
+SET(FFMPEG_INC_DIR $ENV{FFMPEG_INC_PATH})
+
+IF(NOT FFMPEG_INC_DIR)
+	#This hint is useless... 
+	FIND_PATH(FFMPEG_INC_DIR HINT $ENV{FLTK_INC_PATH})
+ENDIF()
+
+INCLUDE_DIRECTORIES( ${FFMPEG_INC_DIR} )
+INCLUDE_DIRECTORIES( ${FFMPEG_INC_DIR}/libavcodec )
+INCLUDE_DIRECTORIES( ${FFMPEG_INC_DIR}/libavformat )
+INCLUDE_DIRECTORIES( ${FFMPEG_INC_DIR}/libswscale )
+INCLUDE_DIRECTORIES( ${FFMPEG_INC_DIR}/libavutil ) 
+
+#ffmpeg uses c99 definitions so tell the compiler to use them
+SET(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS")
+
+#Where do we look for included files from iglu?
+INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/iglu )
+INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR} )
+
+#Place our finished library in /lib
+SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
+
+#Finally, add the library
+ADD_LIBRARY(iglu ${SOURCES} ${HEADERS})
+

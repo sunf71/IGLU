@@ -1,0 +1,358 @@
+/******************************************************************/
+/* igluTexture.cpp                                                */
+/* -----------------------                                        */
+/*                                                                */
+/* The file defines an image class that stores a texture.         */
+/*     This is very similar to the image class, but also defines  */
+/*     access patterns for the texture with interpolation.        */
+/*                                                                */
+/* Chris Wyman (10/26/2006)                                       */
+/******************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include "igluTexture.h"
+
+using namespace iglu;
+
+
+IGLUTexture::IGLUTexture( ) :
+    m_filename(0), m_texName(0), 
+	m_width(-1), m_height(-1), m_depth(-1), 
+	m_texID(0), m_initialized(false), m_compressTex(false)
+{
+	glGenTextures( 1, &m_texID );
+}
+
+
+IGLUTexture::~IGLUTexture()
+{
+	glDeleteTextures( 1, &m_texID );
+}
+
+
+void IGLUTexture::Bind( GLenum textureUnit ) const
+{
+	glActiveTexture( textureUnit );
+	glBindTexture( GetTextureType(), m_texID );
+	glEnable( GetTextureType() );
+}
+
+void IGLUTexture::Unbind( GLenum textureUnit ) const
+{
+	glActiveTexture( textureUnit );
+	glBindTexture( GetTextureType(), 0 );
+	glEnable( GetTextureType() );
+}
+
+GLint  IGLUTexture::GetMinification( unsigned int flags ) const
+{
+	if (flags & IGLU_MIN_NEAREST)                  return GL_NEAREST;
+	else if (flags & IGLU_MIN_NEAR_MIP_NEAR)       return GL_NEAREST_MIPMAP_NEAREST;
+	else if (flags & IGLU_MIN_NEAR_MIP_LINEAR)     return GL_NEAREST_MIPMAP_LINEAR;
+	else if (flags & IGLU_MIN_LINEAR_MIP_NEAR)     return GL_LINEAR_MIPMAP_NEAREST;
+	else if (flags & IGLU_MIN_LINEAR_MIP_LINEAR)   return GL_LINEAR_MIPMAP_LINEAR;
+
+	return GL_LINEAR;
+}
+
+GLint  IGLUTexture::GetMagnification( unsigned int flags ) const
+{
+	if (flags & IGLU_MAG_NEAREST)                  return GL_NEAREST;
+	
+	return GL_LINEAR;
+}
+
+GLint  IGLUTexture::GetSWrap( unsigned int flags ) const
+{
+	if (flags & IGLU_REPEAT_S)                     return GL_REPEAT;
+	else if (flags & IGLU_MIRROR_REPEAT_S)         return GL_MIRRORED_REPEAT;
+	else if (flags & IGLU_CLAMP_TO_BORDER_S)       return GL_CLAMP_TO_BORDER;
+	else if (flags & IGLU_CLAMP_TO_EDGE_S)         return GL_CLAMP_TO_EDGE;
+
+	return GL_CLAMP;
+}
+
+GLint  IGLUTexture::GetTWrap( unsigned int flags ) const
+{
+	if (flags & IGLU_REPEAT_T)                     return GL_REPEAT;
+	else if (flags & IGLU_MIRROR_REPEAT_T)         return GL_MIRRORED_REPEAT;
+	else if (flags & IGLU_CLAMP_TO_BORDER_T)       return GL_CLAMP_TO_BORDER;
+	else if (flags & IGLU_CLAMP_TO_EDGE_T)         return GL_CLAMP_TO_EDGE;
+
+	return GL_CLAMP;
+}
+
+GLenum iglu::IGLUTexture::GetCompressedFormat( GLenum imgType ) const
+{
+	// Make sure the user actually wants us to try to compress this!
+	if ( !m_compressTex )
+		return imgType;
+
+	// Compressed textures usually require multiples of 4 in resolution...
+	if ( (m_width%4 !=0) || (m_height%4 !=0) )
+		return imgType;
+
+	// XXX: If you want to take other formats (than GL_RGB and RGBA), change this!
+	return imgType==GL_RGB ? 
+           GL_COMPRESSED_RGB_S3TC_DXT1_EXT :  // Compressed format for GL_RGB 
+		   GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;  // Compressed format for GL_RGBA
+}
+
+
+bool   IGLUTexture::UsingMipmaps( unsigned int flags ) const
+{
+	return ( flags & ( IGLU_MIN_NEAR_MIP_NEAR   | 
+		               IGLU_MIN_NEAR_MIP_LINEAR | 
+			           IGLU_MIN_LINEAR_MIP_NEAR | 
+					   IGLU_MIN_LINEAR_MIP_LINEAR ) ) > 0;
+}
+
+
+void   IGLUTexture::SetTextureCompareMode( unsigned int flags, bool isTexBound ) const
+{
+	GLuint type = GetTextureType();
+	GLenum value = flags & IGLU_TEX_COMPARE_REF ? GL_COMPARE_REF_TO_TEXTURE : GL_NONE;
+	if (m_initialized)
+	{
+		if (!isTexBound) glBindTexture( type, m_texID );
+		glTexParameteri( type, GL_TEXTURE_COMPARE_MODE, value );
+		if (!isTexBound) glBindTexture( type, 0 );
+	}
+}
+
+GLenum iglu::IGLUTexture::GetFormatDataType( GLenum imgFormat ) const
+{
+	switch ( imgFormat )
+	{
+	case GL_RGBA32F:
+	case GL_RGB32F:
+	case GL_RG32F:
+	case GL_R32F:
+		return GL_FLOAT;
+	case GL_RGBA16F:
+	case GL_RGB16F:
+	case GL_RG16F:
+	case GL_R16F:
+		return GL_HALF_FLOAT;
+	case GL_RGBA32I:
+	case GL_RGB32I:
+	case GL_RG32I:
+	case GL_R32I:
+		return GL_INT;
+	case GL_RGBA32UI:
+	case GL_RGB32UI:
+	case GL_RG32UI:
+	case GL_R32UI:
+		return GL_UNSIGNED_INT;
+	case GL_RGBA16I:
+	case GL_RGBA16_SNORM:
+	case GL_RGB16I:
+	case GL_RGB16_SNORM:
+	case GL_RG16I:
+	case GL_RG16_SNORM:
+	case GL_R16I:
+	case GL_R16_SNORM:
+		return GL_SHORT;
+	case GL_RGBA16UI:
+	case GL_RGBA16:
+	case GL_RGB16UI:
+	case GL_RGB16:
+	case GL_RG16UI:
+	case GL_RG16:
+	case GL_R16UI:
+	case GL_R16:
+		return GL_UNSIGNED_SHORT;
+	case GL_RGBA8I:
+	case GL_RGBA8_SNORM:
+	case GL_RGB8I:
+	case GL_RGB8_SNORM:
+	case GL_RG8I:
+	case GL_RG8_SNORM:
+	case GL_R8I:
+	case GL_R8_SNORM:	
+		return GL_BYTE;
+	case GL_RGBA8UI:
+	case GL_RGBA8:
+	case GL_RGB8UI:
+	case GL_RGB8:
+	case GL_RG8UI:
+	case GL_RG8:
+	case GL_R8UI:
+	case GL_R8:
+	case GL_SRGB8:
+	case GL_SRGB8_ALPHA8:
+		return GL_UNSIGNED_BYTE;
+
+	case GL_DEPTH_COMPONENT16:
+		return GL_SHORT;
+	case GL_DEPTH_COMPONENT24:
+	case GL_DEPTH_COMPONENT32:
+		return GL_UNSIGNED_INT;
+	case GL_DEPTH_COMPONENT32F:
+		return GL_FLOAT;
+	case GL_DEPTH24_STENCIL8:
+		return GL_UNSIGNED_INT_24_8;
+	case GL_DEPTH32F_STENCIL8:
+		return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+
+	case GL_RGBA4:
+		return GL_UNSIGNED_SHORT_4_4_4_4;
+	case GL_RGB5_A1:
+		return GL_UNSIGNED_SHORT_5_5_5_1;
+	case GL_RGB10_A2:
+	case GL_RGB10_A2UI:
+		return GL_UNSIGNED_INT_10_10_10_2;
+
+	default:
+		;
+	}
+
+	return GL_UNSIGNED_BYTE;
+}
+
+bool iglu::IGLUTexture::IsFormatRenderable( GLenum imgFormat ) const
+{
+	switch ( imgFormat )
+	{
+	case GL_RGBA32F:
+	case GL_RG32F:
+	case GL_R32F:
+	case GL_RGBA16F:
+	case GL_RG16F:
+	case GL_R16F:
+	case GL_RGBA32I:
+	case GL_RG32I:
+	case GL_R32I:
+	case GL_RGBA32UI:
+	case GL_RG32UI:
+	case GL_R32UI:
+	case GL_RGBA16I:
+	case GL_RG16I:
+	case GL_R16I:
+	case GL_RGBA16UI:
+	case GL_RGBA16:
+	case GL_RG16UI:
+	case GL_RG16:
+	case GL_R16UI:
+	case GL_R16:
+	case GL_RGBA8I:
+	case GL_RG8I:
+	case GL_R8I:
+	case GL_RGBA8UI:
+	case GL_RGBA8:
+	case GL_RG8UI:
+	case GL_RG8:
+	case GL_R8UI:
+	case GL_R8:
+	case GL_DEPTH_COMPONENT16:
+	case GL_DEPTH_COMPONENT24:
+	case GL_DEPTH_COMPONENT32:
+	case GL_DEPTH_COMPONENT32F:
+	case GL_DEPTH24_STENCIL8:
+	case GL_DEPTH32F_STENCIL8:
+	case GL_RGBA4:
+	case GL_RGB5_A1:
+	case GL_RGB10_A2:
+	case GL_RGB10_A2UI:
+		return true;
+
+	default:
+		;
+	}
+
+	return false;
+}
+
+GLenum iglu::IGLUTexture::GetBaseInternalFormat( GLenum imgFormat ) const
+{
+	switch ( imgFormat )
+	{
+	case GL_RGBA32F:
+	case GL_RGBA16F:
+	case GL_RGBA32UI:
+	case GL_RGBA32I:
+	case GL_RGBA16I:
+	case GL_RGBA16_SNORM:
+	case GL_RGBA4:
+	case GL_RGB5_A1:
+	case GL_RGB10_A2:
+	case GL_RGB10_A2UI:
+	case GL_RGBA16UI:
+	case GL_RGBA16:
+	case GL_RGBA8I:
+	case GL_RGBA8UI:
+	case GL_RGBA8:
+	case GL_RGBA8_SNORM:
+	case GL_SRGB8_ALPHA8:
+		return GL_RGBA;
+
+	case GL_RGB32F:
+	case GL_RGB16F:
+	case GL_RGB32UI:
+	case GL_RGB32I:
+	case GL_RGB16I:
+	case GL_RGB16_SNORM:
+	case GL_RGB4:
+	case GL_RGB16UI:
+	case GL_RGB16:
+	case GL_RGB8I:
+	case GL_RGB8UI:
+	case GL_RGB8:
+	case GL_SRGB8:
+	case GL_RGB8_SNORM:
+	case GL_R11F_G11F_B10F:
+	case GL_RGB9_E5:
+		return GL_RGB;
+
+	case GL_RG32F:
+	case GL_RG16F:
+	case GL_RG32UI:
+	case GL_RG32I:
+	case GL_RG16I:
+	case GL_RG16_SNORM:
+	case GL_RG8_SNORM:
+	case GL_RG16UI:
+	case GL_RG16:
+	case GL_RG8I:
+	case GL_RG8UI:
+	case GL_RG8:
+		return GL_RG;
+
+	case GL_R32F:
+	case GL_R16F:
+	case GL_R32UI:
+	case GL_R32I:
+	case GL_R16I:
+	case GL_R16_SNORM:
+	case GL_R8_SNORM:
+	case GL_R16UI:
+	case GL_R16:
+	case GL_R8I:
+	case GL_R8UI:
+	case GL_R8:
+		return GL_RED;
+
+	case GL_DEPTH_COMPONENT16:
+	case GL_DEPTH_COMPONENT24:
+	case GL_DEPTH_COMPONENT32:
+	case GL_DEPTH_COMPONENT32F:
+		return GL_DEPTH_COMPONENT;
+	case GL_DEPTH24_STENCIL8:
+	case GL_DEPTH32F_STENCIL8:
+		return GL_DEPTH_STENCIL;
+
+	default:
+		;
+	}
+
+	return GL_RGBA;
+}
+
+bool iglu::IGLUTexture::IsDepthFormat( GLenum imgFormat ) const
+{
+	GLenum res = GetBaseInternalFormat(imgFormat);
+	return (res == GL_DEPTH_COMPONENT || res == GL_DEPTH_STENCIL) ? true : false;
+}

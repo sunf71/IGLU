@@ -1,0 +1,107 @@
+/******************************************************************/
+/* igluFloat.cpp                                                  */
+/* -----------------------                                        */
+/*                                                                */
+/* There's nearly always values in your program that need to      */
+/*     change according to some user input.  Often these values   */
+/*     require all sorts of logic to update, set, get, or         */
+/*     change in response to user interface.                      */
+/* This class, and others like it, inherit from UIVariable and    */
+/*     try to avoid spreading UI interface logic out over the     */
+/*     entire code, and instead encapsulate it in these classes.  */
+/*     The additional advantage here, is that derived classes     */
+/*     from UIVariable can all be treated identically, avoiding   */
+/*     special-casing depending on the variable type.             */
+/*                                                                */
+/* Realize that this class adds overhead, and shouldn't be used   */
+/*     for all variables.  Just those that might vary with input  */
+/*     or, perhaps, those defined in an input or script file.     */
+/*                                                                */
+/* Chris Wyman (02/09/2012)                                       */
+/******************************************************************/
+
+
+
+#include "iglu.h"
+#include <FL/Fl_Valuator.h>
+
+using namespace iglu;
+
+IGLUFloat::IGLUFloat( float value, float _min, float _max, char *name ) : 
+	IGLUVariable(name), m_value(value), m_max(_max), m_min(_min), m_delta(0.1)
+{
+}
+
+IGLUFloat::IGLUFloat( float value, const IGLURange<float> &range, float delta, char *name ) : 
+	IGLUVariable(name), m_value(value), m_max(range.GetMax()), m_min(range.GetMin()),
+	m_delta(delta)
+{
+}
+
+void IGLUFloat::SetValue( float newValue, bool force )
+{
+	float oldVal = m_value;
+	m_value = (!force) ? iglu::clamp( newValue, m_min, m_max ) : newValue;
+
+	// If we've modified the variable, update any FLTK widget and call
+	//    any callback we may have set up.
+	if (oldVal != m_value)
+	{
+		if (m_fltkValuator)
+			((Fl_Valuator *)m_fltkValuator)->value( double(m_value) );
+		if (m_valueCallback)
+			(*m_valueCallback)((void *)this);
+		if (m_valueCallback2)
+			(*m_valueCallback2)(m_callback2Data, (void *)this);
+	}
+}
+
+bool IGLUFloat::UpdateFromInput( unsigned int inputKey )
+{
+	bool handled = false;
+	float oldVal = m_value;
+
+	// Check all keys we respond to, check if this matches.
+	for (unsigned int i=0; i< m_keys.Size(); i++)
+	{
+		if (inputKey == m_keys[i])
+		{
+			m_value += m_responses[i];
+			handled = true;
+			break;
+		}
+	}
+
+	// Make sure our new value is not out of range
+	m_value = iglu::clamp( m_value, m_min, m_max );
+	bool modified = (oldVal != m_value);
+	
+	// If we've modified the variable, update any FLTK widget and call
+	//    any callback we may have set up.
+	if (modified && m_fltkValuator)
+		((Fl_Valuator *)m_fltkValuator)->value( double(m_value) );
+	if (modified && m_valueCallback)
+		(*m_valueCallback)((void *)this);
+	if (modified && m_valueCallback2)
+		(*m_valueCallback2)(m_callback2Data, (void *)this);
+
+	return handled;
+}
+
+
+void IGLUFloat::FLTKCallback( Fl_Widget *fltkWidget, void *igluFloat )
+{
+	// Cast the inputs so we can appropriately set the value.
+	IGLUFloat *ptr = (IGLUFloat *)igluFloat;
+	Fl_Valuator *val = (Fl_Valuator *)fltkWidget;
+
+	// Update the appropriate IGLUFloat's value.  We don't call SetValue, as that
+	//    would cause a feedback/callback loop between FLTK and IGLUFloat.
+	float oldVal = ptr->m_value;
+	ptr->m_value = iglu::clamp( float(val->value()), ptr->m_min, ptr->m_max );
+	if ((oldVal != ptr->m_value) && ptr->m_valueCallback)
+		(*ptr->m_valueCallback)((void *)igluFloat);
+	if ((oldVal != ptr->m_value) && ptr->m_valueCallback2)
+		ptr->CallSecondCallback();
+}
+

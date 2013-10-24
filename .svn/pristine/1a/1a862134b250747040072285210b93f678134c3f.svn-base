@@ -1,0 +1,412 @@
+/**************************************************************************
+** igluShaderStage.cpp                                                   **
+** -----------------                                                     **
+**                                                                       **
+** This header implements a class that encapsulates a single GLSL shader **
+**   stage (e.g., one glsl file) and associated state.                   **
+**                                                                       **
+** Chris Wyman (10/25/2011)                                              **
+**************************************************************************/
+
+#include "iglu.h"
+
+using namespace iglu;
+
+IGLUShaderStage::IGLUShaderStage( uint type, const char *inputShader, bool verbose ) : 
+	m_fromFile(true), m_stageInput(0), m_shaderID(0), 
+	m_verbose(verbose), m_isCompiled(false)
+{ 
+	// Copy the input (either the filename or the actual shader code)
+	m_stageInput = strdup( inputShader );
+
+	// Should we treat the input as a filename or as a string containing the shader code?
+	if (type & IGLU_SHADER_FROM_STRING)
+		m_fromFile = false;
+
+	// Determine the shader type
+	if (type & IGLU_SHADER_VERTEX)            m_shaderType = GL_VERTEX_SHADER;
+	else if (type & IGLU_SHADER_GEOMETRY)     m_shaderType = GL_GEOMETRY_SHADER;
+	else if (type & IGLU_SHADER_TESS_EVAL)    m_shaderType = GL_TESS_EVALUATION_SHADER;
+	else if (type & IGLU_SHADER_TESS_CONTROL) m_shaderType = GL_TESS_CONTROL_SHADER;
+	else /* type & IGLU_SHADER_FRAGMENT */    m_shaderType = GL_FRAGMENT_SHADER;
+
+	// Initialize our semantic names (to NULL)
+	for (int i=0; i<___IGLU_SEM_TYPE_COUNT; i++)
+		m_semanticNames[i] = 0;
+
+	// Create a shader of the appropriate type
+	m_shaderID = glCreateShader( m_shaderType );
+	SetupShader();
+}
+
+
+IGLUShaderStage::~IGLUShaderStage()                                   
+{
+	for (int i=0; i<___IGLU_SEM_TYPE_COUNT; i++)
+		if (m_semanticNames[i])
+			free( m_semanticNames[i] );
+	if (m_stageInput) free( m_stageInput );
+	glDeleteShader(m_shaderID);
+}
+
+int IGLUShaderStage::SetupShader( void )
+{
+	// Load the shader code (either from a file or directly from the input string)
+	char *tmpString = m_fromFile ? ReturnFileAsString( m_stageInput ) : m_stageInput;
+	if (!tmpString) return PrintFileIOError();
+
+	// Create an OpenGL shader object, give OpenGL the source, and if we loaded a copy of
+	//      a file, free the temp memory containing the shader code.
+	glShaderSource( m_shaderID, 1, (const char **)&tmpString, 0 );
+	if (m_fromFile) free( tmpString );
+
+	// Copile the shader, and check if there were compilation errors
+	GLint compiled = 0;
+	glCompileShader( m_shaderID );
+	glGetShaderiv( m_shaderID, GL_COMPILE_STATUS, &compiled);
+	m_isCompiled = (compiled != 0);
+
+	// If there were compile errors, we might want to print them out.
+	if (!m_isCompiled) return PrintCompilerError();
+
+	return IGLU_NO_ERROR;
+}
+
+int IGLUShaderStage::ReloadShader( void )
+{
+	// We don't reload if we passed in a hardcoded string
+	if (!m_fromFile)
+		return IGLU_NO_ERROR;
+
+	// (Re-)load the shader using our setup code.
+	return SetupShader();
+}
+
+// Open a shader, read its contents into a string in memory.
+char *IGLUShaderStage::ReturnFileAsString( char *filename, int recurseDepth )
+{	
+	/* open the file */
+	FILE *file;
+	
+	if( recurseDepth > 5 )
+	{
+		fprintf(stderr, "*** Error: IGLUShaderStage::ReturnFileAsString() recursion limit exceeded.\n" );
+		return 0;
+	}
+	
+	file = fopen( filename, "rb" );
+	if (!file) return 0;	
+
+	/* get the length of the file */
+	fseek( file, 0, SEEK_END );
+	long size = ftell( file );
+	rewind( file );
+
+	/* allocate memory for the shader string */
+	char *shaderMemory = (char *)calloc( (size+1), sizeof(char) );
+	if (!shaderMemory) { fclose(file); return 0; }
+	memset( shaderMemory, 0, (size+1) );
+
+	/* read shader data from the file */
+	fread (shaderMemory,1,size,file);
+	shaderMemory[size] = 0;
+
+	/* clean up and return the data */
+	fclose(file);
+	
+	/* process the string for macros */
+	return ReturnProcessedShaderString( filename, shaderMemory, recurseDepth );
+}
+
+// Grabs the shader log (e.g., compiler errors) for a specified shader. 
+//     (The filename is just there to be pretty)
+int IGLUShaderStage::PrintCompilerError( void )
+{
+	if (!m_verbose) return IGLU_ERROR_GLSL_COMPILE_FAILED;
+
+	char buf[4096];
+	GLsizei theLen;
+	fprintf(stderr, "-------------------------------------------------------------------------------\n");
+	fprintf(stderr, "*** Error!  GLSL failed to compile %s....\n", m_fromFile ? m_stageInput : "(hardcoded shader code)" );
+	fprintf(stderr, "-------------------------------------------------------------------------------\n");
+	glGetShaderInfoLog( m_shaderID, 4095, &theLen, buf );
+	fprintf(stderr, "%s\n\n", buf);
+
+	return IGLU_ERROR_GLSL_COMPILE_FAILED;
+}
+
+// Grabs the shader log (e.g., compiler errors) for a specified shader. 
+//     (The filename is just there to be pretty)
+int IGLUShaderStage::PrintFileIOError( void )
+{
+	if (m_verbose) 
+		printf("***Error: Unable to load shader '%s'!\n", m_stageInput );
+	return IGLU_ERROR_FILE_OPEN_FAILED;
+}
+
+
+
+// This is a fairly ugly piece of code that (at least in priciple) just loads
+//    a file into a character string.
+// Some of my students wanted the ability to #include files into multiple shaders,
+//    which is not natively supported by GLSL.  This is handled by 
+//    #pragma include <file> that is interpreted in this code.  Recursion of 
+//    #includes is allowed to a limited depth (of 5 recursive includes)
+char *IGLUShaderStage::ReturnProcessedShaderString( char* inputFilename, char* buffer, int recurseDepth )
+{	
+	const int LINE_SIZE = 512;
+	char line[LINE_SIZE];
+	int lineNumber = 0;
+	char *pch, *lastpch = buffer;
+	
+	// get the length of this file input
+	int inputLength = strlen(buffer);
+	
+	// look for a linebreak
+	pch = strchr(buffer, '\n');
+	if( !pch )
+		return buffer;
+	
+	// loop through the lines
+	while( pch )
+	{
+		lineNumber++;
+		int lineLength = pch - lastpch;
+		lineLength = lineLength < LINE_SIZE ? lineLength : LINE_SIZE - 1;
+		
+		// copy the current line
+		strncpy( line, lastpch, lineLength );
+		line[lineLength] = '\0';
+		
+		// Find the first token on the line
+		char firstToken[LINE_SIZE];
+		char* pLineToken = StripLeadingWhiteSpace(line);
+		
+		// Find the first token on the line.  Treat a '(' as a separator for locating tokens.
+		//    Treating '(' as a token is important for identifying lines staring with 'layout'
+		pLineToken = StripLeadingSpecialTokenToBuffer( pLineToken, firstToken, '(' );
+
+		// We've added our own syntax to the input attribute.  Check if we have an input
+		//     attribute, then grab our information, if available, and modify the input so
+		//     the GLSL compiler will compile it.
+		//  "in vec3 myVertex : IGLU_VERTEX;" labels this as a vertex position attribute
+		//  and is converted to "in vec3 myVertex ;//GLU_VERTEX;" prior to GLSL compilation
+		if( !strcmp( firstToken, "in" ) )
+		{
+			char token[LINE_SIZE], varName[LINE_SIZE];
+			char* pLine = StripLeadingTokenToBuffer( pLineToken, token ); // Find the data type
+			pLine = StripLeadingTokenToBuffer( pLine, varName );          // Find the variable name
+
+			// Tidy the variable name, to ensure it doesn't have ";" or ":" at the end
+			char *pChar = strchr( varName, ';' );
+			if (pChar) pChar[0] = 0;
+			pChar = strchr( varName, ':' );
+			if (pChar) pChar[0] = 0;
+
+			// Now see if the user put a colon after the name for an IGLU vertex attribute
+			pLine = strchr( pLineToken, ':' );
+			if (pLine) // If yes...
+			{
+				pChar = strchr( pLineToken, ';' );
+				if (pChar && pChar > pLine) //  Yes, there's a ;, and it's after the :.  Good.
+				{
+					pChar = StripLeadingWhiteSpace( pLine+1 );
+					StripLeadingTokenToBuffer( pChar, token ); // Get the IGLU attrib type
+					pChar = strchr( token, ';' );  // If our token includes the ;, get rid of it.
+					if (pChar) pChar[0] = 0;
+					
+					// Now change the input file to get rid of this funny syntax for the GLSL compiler
+					//    by commenting it out.
+					char *bufPtr = lastpch+(pLine-line);
+					bufPtr[0] = ';';  // Change the : into a ; for the GLSL compiler.
+					bufPtr[1] = bufPtr[2] = '/';     // Comment the line out for the GLSL compiler
+
+					// Ok actually check if the user gave a valid attribute name
+					MakeLower( token );
+					int attribIdx = GetSemanticType( token );
+					if ( attribIdx != IGLU_ATTRIB_UNKNOWN )
+					{
+						if (m_semanticNames[attribIdx])
+							free( m_semanticNames[attribIdx] );
+						m_semanticNames[attribIdx] = strdup( varName );
+					}
+				}
+			}
+		}
+		else if( !strcmp( firstToken, "layout" ) )
+		{
+			// Here the developer has used the GLSL layout qualifier.  S/he might specifiy the location
+			//     of the vertex,normal,texcoord attributes using this.  We've defined IGLU_VERTEX and
+			//     other attribute names here and assigned them to specific prespecified attribute binding points
+			//     This is an alternate to the : IGLU_ semantic described above, and more cleanly allows
+			//     portable code (because for non IGLU applications, the GLSL code can add #define IGLU_VERTEX 0)
+
+			// Find the first reference to an IGLU_ constant on this line.
+			char *pChar = strstr( line, "IGLU_" );
+			if (pChar != NULL) // If there was one
+			{
+				char token[LINE_SIZE], varName[LINE_SIZE];
+				char *endPtr = StripLeadingTokenToBuffer( pChar, token );  // rip off the attribute IGLU_ type
+				char *startPtr = pChar;
+
+				// Tidy the attribute name, to ensure it doesn't have ")" at the end
+				pChar = strchr( token, ')' );
+				if (pChar) pChar[0] = 0;
+				int attribNameLen = pChar-token;
+
+				// Ok actually check if the user gave a valid attribute name
+				MakeLower( token );
+				int attribIdx = GetSemanticType( token );
+
+				// White out the IGLU_ attribute name in the code
+				char *bufPtr = lastpch+(startPtr-line);
+				for ( int i=0; i < attribNameLen; i++ )
+					bufPtr[i] = ' ';
+
+				// Fill in the appropriate location ID to the GL code
+				switch ( attribIdx )
+				{
+				default:
+				case IGLU_ATTRIB_VERTEX:
+					bufPtr[0] = '0';
+					break;
+				case IGLU_ATTRIB_NORMAL:
+					bufPtr[0] = '1';
+					break;
+				case IGLU_ATTRIB_TEXCOORD:
+					bufPtr[0] = '2';
+					break;
+				case IGLU_ATTRIB_MATL_ID:
+					bufPtr[0] = '3';
+					break;
+				}
+
+				// This might break when used for non-attribute inputs (esp. with complex layouts including letters "in")...
+				pChar = strstr( line, "in" );
+				pChar = StripLeadingTokenToBuffer( pChar, varName ); // strip "in"
+				pChar = StripLeadingTokenToBuffer( pChar, varName ); // strip data type
+				pChar = StripLeadingTokenToBuffer( pChar, varName ); // strip variable name.
+
+				// Remove ; at end of variable name, if necessary.
+				pChar = strchr( varName, ';' );
+				if (pChar) pChar[0] = 0;
+
+				// If the user gave a valid attribute, remember that!
+				if ( attribIdx != IGLU_ATTRIB_UNKNOWN )
+				{
+					if (m_semanticNames[attribIdx])
+						free( m_semanticNames[attribIdx] );
+					m_semanticNames[attribIdx] = strdup( varName );
+				}
+			}
+		}
+		else if( !strncmp( line, "#include", 8 ) )
+		{
+			bool validFile = true;
+			
+			char bFilename[LINE_SIZE];
+			char* pFilename = line + 8;
+			int filenameLength = 0;
+			
+			// trim whitespace off the front and back of the included filename
+			while( *pFilename && isspace(*pFilename) )
+				pFilename++;
+			while( *(pFilename + filenameLength) && !isspace(*(pFilename + filenameLength)) )
+				filenameLength++;
+			
+			// need a length for this to be valid
+			if( !filenameLength )
+				validFile = false;
+			
+			if( validFile )
+			{
+				// tidy up the filename
+				filenameLength = filenameLength > 0 ? filenameLength : 0;
+				filenameLength = filenameLength < LINE_SIZE ? filenameLength : LINE_SIZE - 1;
+				strncpy( bFilename, pFilename, filenameLength );
+				bFilename[filenameLength] = '\0';
+				
+				// attempt to open it
+				char* fileAsString = ReturnFileAsString( bFilename, recurseDepth + 1 );
+				
+				if( !fileAsString )
+					validFile = false;
+				
+				// got a valid input file
+				else
+				{
+					int incLength = strlen(fileAsString);
+					int lineStart = lastpch - buffer;
+					int newLength = inputLength - lineLength + incLength + 2; // terminator plus a newline after the include
+					
+					// concatenate all the stuff before the include, the include, and all the stuff after
+					char* newFileString = (char*)calloc( newLength, sizeof(char) );
+					strncpy( newFileString, buffer, lineStart );	// beginning of file
+					strcat( newFileString, fileAsString );
+					strcat( newFileString, "\n" );
+					strcat( newFileString, buffer + lineStart + lineLength + 1 );
+					
+					//append a null-terminator to the new string
+					newFileString[newLength-1] = '\0';
+					
+					// we're done with the old buffer now
+					free( buffer );
+					
+					// with some better coding, we could just keep looping through the lines. However, the previous
+					// buffer has been discarded; so the easy thing to do is to just take the results of what just happened
+					// and process it again, in case there are any more #pragma includes that need to be processed. Not as
+					// efficient as it could be, but this doesn't happen often.
+					return ReturnProcessedShaderString( inputFilename, newFileString, recurseDepth  );
+				}
+			}
+			
+			if( !validFile )
+			{
+				fprintf(stderr, "(((IGLUGLSLProgram #pragma Warning!)))....When compiling '%s': Invalid include on line %d.\n", inputFilename, lineNumber );
+				return 0;
+			}
+		}
+		
+		
+		// next linebreak
+		lastpch = pch + 1;	// skip ahead one to avoid the line break
+		pch = strchr(pch+1, '\n');
+	}
+	
+	return buffer;
+}
+
+uint IGLUShaderStage::GetSemanticType( char *type )
+{
+	if (!strcmp( type, "iglu_vertex" ) || !strcmp( type, "iglu_vertices" ))
+		return IGLU_ATTRIB_VERTEX;
+	if (!strcmp( type, "iglu_normal" ) || !strcmp( type, "iglu_normals" ))
+		return IGLU_ATTRIB_NORMAL;
+	if (!strcmp( type, "iglu_texcoord" ) || !strcmp( type, "iglu_texcoords" ) || !strcmp( type, "iglu_texture" ) )
+		return IGLU_ATTRIB_TEXCOORD;
+	if (!strcmp( type, "iglu_matlid" ) || !strcmp( type, "iglu_material" ) || !strcmp( type, "iglu_matl_id" ) )
+		return IGLU_ATTRIB_MATL_ID;
+	if (!strcmp( type, "iglu_color0" ) || !strcmp( type, "iglu_color" ) || !strcmp( type, "iglu_mrt0" ))
+		return IGLU_MRT_COLOR0;
+	if (!strcmp( type, "iglu_color1" ) || !strcmp( type, "iglu_mrt1" ))
+		return IGLU_MRT_COLOR1;
+	if (!strcmp( type, "iglu_color2" ) || !strcmp( type, "iglu_mrt2" ))
+		return IGLU_MRT_COLOR2;
+	if (!strcmp( type, "iglu_color3" ) || !strcmp( type, "iglu_mrt3" ))
+		return IGLU_MRT_COLOR3;
+	if (!strcmp( type, "iglu_color4" ) || !strcmp( type, "iglu_mrt4" ))
+		return IGLU_MRT_COLOR4;
+	if (!strcmp( type, "iglu_color5" ) || !strcmp( type, "iglu_mrt5" ))
+		return IGLU_MRT_COLOR5;
+	if (!strcmp( type, "iglu_color6" ) || !strcmp( type, "iglu_mrt6" ))
+		return IGLU_MRT_COLOR6;
+	if (!strcmp( type, "iglu_color7" ) || !strcmp( type, "iglu_mrt7" ))
+		return IGLU_MRT_COLOR7;
+	return IGLU_ATTRIB_UNKNOWN;
+}
+
+const char *IGLUShaderStage::GetSemanticVariableName( IGLUSemanticType type )
+{
+	return m_semanticNames[ (uint) type ];
+}
+

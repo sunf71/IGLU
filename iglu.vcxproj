@@ -1,0 +1,283 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{78C0CD22-4D13-472E-8016-1BA19B440C5E}</ProjectGuid>
+    <RootNamespace>iglu</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\obj\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\obj\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.;.\iglu;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>.\ffmpeg\include\libswscale;.;.\ffmpeg\include;.\iglu;.\ffmpeg\include\libavutil;.\ffmpeg\include\libavformat;.\ffmpeg\include\libavcodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;HAS_FFMPEG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>glew32.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Utils\Math\igluColors.cpp" />
+    <ClCompile Include="Utils\Math\igluMath.cpp" />
+    <ClCompile Include="Utils\Math\igluOrthoNormalBasis.cpp" />
+    <ClCompile Include="Utils\GPUBuffers\igluBuffer.cpp" />
+    <ClCompile Include="Utils\Timer\igluCPUTimer.cpp" />
+    <ClCompile Include="Utils\Timer\igluFrameRate.cpp" />
+    <ClCompile Include="Utils\Timer\igluGPUTimer.cpp" />
+    <ClCompile Include="Utils\Random\igluHalton1D.cpp" />
+    <ClCompile Include="Utils\Random\igluHalton2D.cpp" />
+    <ClCompile Include="Utils\Random\igluHammersley2D.cpp" />
+    <ClCompile Include="Utils\Random\igluRandom.cpp" />
+    <ClCompile Include="Utils\Random\igluSampler2D.cpp" />
+    <ClCompile Include="Utils\GLSLShaders\igluShaderProgram.cpp" />
+    <ClCompile Include="Utils\GLSLShaders\igluShaderStage.cpp" />
+    <ClCompile Include="Utils\GLSLShaders\igluShaderVariable.cpp" />
+    <ClCompile Include="Utils\Capture\igluFrameGrab.cpp" />
+    <ClCompile Include="Utils\Input\igluImage.cpp" />
+    <ClCompile Include="Utils\Input\igluRandomTexture2D.cpp" />
+    <ClCompile Include="Utils\Input\igluTexture.cpp" />
+    <ClCompile Include="Utils\Input\igluTexture2D.cpp" />
+    <ClCompile Include="Utils\Input\igluTextureBuffer.cpp" />
+    <ClCompile Include="Utils\Input\igluTextureLightprobeCubemap.cpp" />
+    <ClCompile Include="Utils\Input\igluVideoTexture2D.cpp" />
+    <ClCompile Include="Utils\Input\Images\igluBMP.cpp" />
+    <ClCompile Include="Utils\Input\Images\igluJPEG.cpp" />
+    <ClCompile Include="Utils\Input\Images\igluPPM.cpp" />
+    <ClCompile Include="Utils\Input\Images\igluRGB.cpp" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jaricom.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcapimin.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcapistd.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcarith.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jccoefct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jccolor.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcdctmgr.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jchuff.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcinit.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmainct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmarker.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmaster.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcomapi.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcparam.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcprepct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jcsample.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jctrans.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdapimin.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdapistd.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdarith.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdatadst.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdatasrc.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdcoefct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdcolor.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jddctmgr.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdhuff.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdinput.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmainct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmarker.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmaster.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmerge.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdpostct.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdsample.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jdtrans.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jerror.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctflt.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctfst.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctint.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctflt.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctfst.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctint.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jmemmgr.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jmemnobs.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jpegtran.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jquant1.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jquant2.c" />
+    <ClCompile Include="Utils\Input\Images\jpeg\jutils.c" />
+    <ClCompile Include="Utils\Input\Video\igluVideo.cpp" />
+    <ClCompile Include="Utils\Input\Models\igluOBJMaterial.cpp" />
+    <ClCompile Include="Utils\Input\Models\igluOBJReader.cpp" />
+    <ClCompile Include="Utils\Input\TextParsing\igluFileParser.cpp" />
+    <ClCompile Include="Utils\Input\TextParsing\igluTextParsing.cpp" />
+    <ClCompile Include="Utils\Input\BuiltIns\igluButtonImages.cpp" />
+    <ClCompile Include="Utils\RenderToTexture\igluFramebuffer.cpp" />
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture.cpp" />
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2D.cpp" />
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2DArray.cpp" />
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2DMultisample.cpp" />
+    <ClCompile Include="Utils\DrawingUtils\igluDrawingUtils.cpp" />
+    <ClCompile Include="Utils\DrawingUtils\igluDrawText.cpp" />
+    <ClCompile Include="Utils\DrawingUtils\igluDrawTexture.cpp" />
+    <ClCompile Include="Utils\DrawingUtils\igluGeomUtils.cpp" />
+    <ClCompile Include="Utils\Interface\iglu2DMouseRotator.cpp" />
+    <ClCompile Include="Utils\Interface\igluMainWindow.cpp" />
+    <ClCompile Include="Utils\Interface\igluMouseInteractor.cpp" />
+    <ClCompile Include="Utils\Interface\igluMouseTranslator.cpp" />
+    <ClCompile Include="Utils\Interface\igluTrackball.cpp" />
+    <ClCompile Include="Utils\OpenGLState\igluTransformFeedback.cpp" />
+    <ClCompile Include="Utils\OpenGLState\igluVertexArrayObject.cpp" />
+    <ClCompile Include="Utils\Window\igluMultiDisplayWidgetWindow.cpp" />
+    <ClCompile Include="Utils\Window\igluMultiDisplayWindow.cpp" />
+    <ClCompile Include="Utils\Window\igluWidgetWindow.cpp" />
+    <ClCompile Include="Utils\Window\igluWindow.cpp" />
+    <ClCompile Include="Utils\Errors\igluErrorExit.cpp" />
+    <ClCompile Include="Datatypes\Matrices\igluMatrix4x4.cpp" />
+    <ClCompile Include="Datatypes\UIVars\igluBool.cpp" />
+    <ClCompile Include="Datatypes\UIVars\igluFloat.cpp" />
+    <ClCompile Include="Datatypes\UIVars\igluInt.cpp" />
+    <ClCompile Include="Datatypes\UIVars\igluVariable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jdct.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jerror.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jinclude.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jmemsys.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jmorecfg.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jpegint.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jpeglib.h" />
+    <ClInclude Include="Utils\Input\Images\jpeg\jversion.h" />
+    <ClInclude Include="Utils\Input\BuiltIns\igluPlusButton.h" />
+    <ClInclude Include="Utils\DrawingUtils\igluBitmapFont1.h" />
+    <ClInclude Include="iglu.h" />
+    <ClInclude Include="iglu\igluMath.h" />
+    <ClInclude Include="iglu\igluOrthoNormalBasis.h" />
+    <ClInclude Include="iglu\igluBuffer.h" />
+    <ClInclude Include="iglu\igluCPUTimer.h" />
+    <ClInclude Include="iglu\igluFrameRate.h" />
+    <ClInclude Include="iglu\igluGPUTimer.h" />
+    <ClInclude Include="iglu\sampling\igluHalton1D.h" />
+    <ClInclude Include="iglu\sampling\igluHalton2D.h" />
+    <ClInclude Include="iglu\sampling\igluHammersley2D.h" />
+    <ClInclude Include="iglu\igluRandom.h" />
+    <ClInclude Include="iglu\sampling\igluSampler2D.h" />
+    <ClInclude Include="iglu\igluSampling.h" />
+    <ClInclude Include="iglu\igluShaderProgram.h" />
+    <ClInclude Include="iglu\igluShaderStage.h" />
+    <ClInclude Include="iglu\igluShaderVariable.h" />
+    <ClInclude Include="iglu\igluFrameGrab.h" />
+    <ClInclude Include="iglu\igluImage.h" />
+    <ClInclude Include="iglu\igluRandomTexture2D.h" />
+    <ClInclude Include="iglu\igluTexture.h" />
+    <ClInclude Include="iglu\igluTexture2D.h" />
+    <ClInclude Include="iglu\igluTextureBuffer.h" />
+    <ClInclude Include="iglu\igluTextureLightprobeCubemap.h" />
+    <ClInclude Include="iglu\igluVideoTexture2D.h" />
+    <ClInclude Include="Utils\Input\Images\igluBMP.h" />
+    <ClInclude Include="Utils\Input\Images\igluJPEG.h" />
+    <ClInclude Include="Utils\Input\Images\igluPPM.h" />
+    <ClInclude Include="Utils\Input\Images\igluRGB.h" />
+    <ClInclude Include="iglu\igluVideo.h" />
+    <ClInclude Include="iglu\models\igluModel.h" />
+    <ClInclude Include="iglu\igluModels.h" />
+    <ClInclude Include="iglu\models\igluOBJMaterial.h" />
+    <ClInclude Include="iglu\models\igluOBJReader.h" />
+    <ClInclude Include="iglu\parsing\igluFileParser.h" />
+    <ClInclude Include="iglu\igluParsing.h" />
+    <ClInclude Include="iglu\parsing\igluTextParsing.h" />
+    <ClInclude Include="Utils\Input\BuiltIns\igluBuiltInTextures.h" />
+    <ClInclude Include="iglu\igluFramebuffer.h" />
+    <ClInclude Include="iglu\igluRenderTexture.h" />
+    <ClInclude Include="iglu\igluRenderTexture2D.h" />
+    <ClInclude Include="iglu\igluRenderTexture2DArray.h" />
+    <ClInclude Include="iglu\igluRenderTexture2DMultisample.h" />
+    <ClInclude Include="iglu\igluDrawingUtils.h" />
+    <ClInclude Include="iglu\igluGeomUtils.h" />
+    <ClInclude Include="iglu\interactors\iglu2DMouseRotator.h" />
+    <ClInclude Include="iglu\interface\igluCallback.h" />
+    <ClInclude Include="iglu\interface\igluMainWindow.h" />
+    <ClInclude Include="iglu\interactors\igluMouseInteractor.h" />
+    <ClInclude Include="iglu\interactors\igluMouseTranslator.h" />
+    <ClInclude Include="iglu\interactors\igluTrackball.h" />
+    <ClInclude Include="iglu\glstate\igluVertexArrayObject.h" />
+    <ClInclude Include="iglu\window\igluDisplayMode.h" />
+    <ClInclude Include="iglu\window\igluMultiDisplayWidgetWindow.h" />
+    <ClInclude Include="iglu\window\igluMultiDisplayWindow.h" />
+    <ClInclude Include="iglu\window\igluWidgetWindow.h" />
+    <ClInclude Include="iglu\window\igluWindow.h" />
+    <ClInclude Include="iglu\errors\igluErrorExit.h" />
+    <ClInclude Include="iglu\errors\igluErrors.h" />
+    <ClInclude Include="iglu\igluArray1D.h" />
+    <ClInclude Include="iglu\consts\igluColors.h" />
+    <ClInclude Include="iglu\igluInterval.h" />
+    <ClInclude Include="iglu\igluRange.h" />
+    <ClInclude Include="iglu\igluVector.h" />
+    <ClInclude Include="iglu\vectors\dvec2.h" />
+    <ClInclude Include="iglu\vectors\dvec3.h" />
+    <ClInclude Include="iglu\vectors\dvec4.h" />
+    <ClInclude Include="iglu\vectors\int2.h" />
+    <ClInclude Include="iglu\vectors\int3.h" />
+    <ClInclude Include="iglu\vectors\int4.h" />
+    <ClInclude Include="iglu\vectors\uint2.h" />
+    <ClInclude Include="iglu\vectors\uint3.h" />
+    <ClInclude Include="iglu\vectors\uint4.h" />
+    <ClInclude Include="iglu\vectors\vec2.h" />
+    <ClInclude Include="iglu\vectors\vec3.h" />
+    <ClInclude Include="iglu\vectors\vec4.h" />
+    <ClInclude Include="iglu\igluMatrix4x4.h" />
+    <ClInclude Include="iglu\helpers\igluCountedPtr.h" />
+    <ClInclude Include="iglu\variables\igluBool.h" />
+    <ClInclude Include="iglu\variables\igluFloat.h" />
+    <ClInclude Include="iglu\variables\igluInt.h" />
+    <ClInclude Include="iglu\variables\igluVariable.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

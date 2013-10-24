@@ -1,0 +1,756 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{9f961ea0-5ece-4753-bd1a-bf1f89b35841}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Math">
+      <UniqueIdentifier>{d186f603-a6cc-4eef-acdf-29fc15c1b098}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\GPUBuffers">
+      <UniqueIdentifier>{09d2cca8-8beb-4f39-abed-fd9efae515f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Timer">
+      <UniqueIdentifier>{33c3f685-9bb8-41df-8e02-e1edf6946a57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Random">
+      <UniqueIdentifier>{dbce04a7-357b-4f2f-9e40-a0638b45ec7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\GLSLShaders">
+      <UniqueIdentifier>{5508828a-e5b3-4b00-be32-5b438b978b17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Capture">
+      <UniqueIdentifier>{396008e5-2782-4237-a25c-9265b9bf9cf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input">
+      <UniqueIdentifier>{53f7a43b-b1cf-4907-bb06-223d43c16461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\Images">
+      <UniqueIdentifier>{16de1e40-e451-46f2-8b99-e2f2782baf40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\Images\jpeg">
+      <UniqueIdentifier>{5bc18ed0-283d-4333-b69c-ae7192208e16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\Video">
+      <UniqueIdentifier>{f803e8df-adb6-4d1a-ac3a-36dc60b92dcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\Models">
+      <UniqueIdentifier>{316bfb40-8cc8-4014-a755-9a008c35ffe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\TextParsing">
+      <UniqueIdentifier>{defefbd6-2bff-40cc-8fbd-e94b31fee30b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Input\BuiltIns">
+      <UniqueIdentifier>{ec33f371-fdb1-4017-9265-49ccecdbc55f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\RenderToTexture">
+      <UniqueIdentifier>{58f0a9f3-9e42-4b1c-b479-03387c6a4745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\DrawingUtils">
+      <UniqueIdentifier>{62d3b53c-7fcc-4e44-8539-e94bfb889f75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Interface">
+      <UniqueIdentifier>{ae8e3517-5c20-4e35-86f2-efd16b9d7307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\OpenGLState">
+      <UniqueIdentifier>{4391f1be-184b-48d7-bb3d-67dc608f5728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Window">
+      <UniqueIdentifier>{4e90c6e0-f8ad-409f-be39-f455af7a3977}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Errors">
+      <UniqueIdentifier>{81bbe5ca-7a23-4e99-a4e4-7441f7ac3b0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DataTypes">
+      <UniqueIdentifier>{1d49dd4c-397f-440a-a13f-ea4f3982d20d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DataTypes\Matrices">
+      <UniqueIdentifier>{793940ad-58b8-419c-93e3-cd36fa3604ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DataTypes\UIVars">
+      <UniqueIdentifier>{f3012e42-85bb-4ee4-83d9-b6d6bad62a15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{ba68848f-3d72-491b-8a80-478b190f3acb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Math">
+      <UniqueIdentifier>{7a2e81f2-47ae-4221-86d3-2fb2f3634f77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\GPUBuffers">
+      <UniqueIdentifier>{179851e6-146b-4bb2-83b7-d1fe69c8cb96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Timer">
+      <UniqueIdentifier>{1b043a61-1a09-4877-a06e-1a9ffe9193d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Random">
+      <UniqueIdentifier>{f65ecd8e-c39d-495f-9736-6006e6c77e8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\GLSLShaders">
+      <UniqueIdentifier>{408f1550-ec10-4636-86a5-c729d91ba6cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Capture">
+      <UniqueIdentifier>{5523cb6f-63dc-4634-9d8b-c60abe3d78d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input">
+      <UniqueIdentifier>{905314ef-6106-4339-ad06-f940d69e38be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input\Images">
+      <UniqueIdentifier>{193f304f-b21c-4829-9358-a58482ce13c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input\Video">
+      <UniqueIdentifier>{b9bfd259-2497-4840-8760-ecfbe6a693b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input\Models">
+      <UniqueIdentifier>{59533fee-6eb0-4fa0-bcdb-3a636638c506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input\TextParsing">
+      <UniqueIdentifier>{78287d63-9dbf-463c-9f7f-d9e1ba0fb088}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Input\BuiltIns">
+      <UniqueIdentifier>{b025fb3b-8cdc-46c0-ad07-b42d387431e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\RenderToTexture">
+      <UniqueIdentifier>{c60a6e08-701e-4987-91f1-6619a8f0cf0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\DrawingUtils">
+      <UniqueIdentifier>{1dc7a507-ffe6-4313-be29-b4f295a3528d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Interface">
+      <UniqueIdentifier>{de40d13c-ec17-49b6-9e02-bc396eac446b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\OpenGLState">
+      <UniqueIdentifier>{94a03e94-05bc-4558-b9ec-e378c3aaa270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Window">
+      <UniqueIdentifier>{6837d45e-2a01-419e-8bd7-37e6c874f047}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils\Errors">
+      <UniqueIdentifier>{da4800e1-9007-4358-94c9-957a85056c02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Datatypes">
+      <UniqueIdentifier>{9f39e27f-bdc9-439b-8806-1a8bf996e4e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Datatypes\GPUTypes">
+      <UniqueIdentifier>{6bc80e52-2673-4538-aa85-ba6034c65d53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Datatypes\Matrices">
+      <UniqueIdentifier>{54950072-8459-456b-be3c-81fd09d1cfc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Datatypes\Helpers">
+      <UniqueIdentifier>{481a891e-7945-4302-b704-0f939b49d6b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Datatypes\UIVars">
+      <UniqueIdentifier>{7af836cf-c60a-4814-8248-19c2c66227dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Utils\Math\igluColors.cpp">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Math\igluMath.cpp">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Math\igluOrthoNormalBasis.cpp">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\GPUBuffers\igluBuffer.cpp">
+      <Filter>Source Files\Utils\GPUBuffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Timer\igluCPUTimer.cpp">
+      <Filter>Source Files\Utils\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Timer\igluFrameRate.cpp">
+      <Filter>Source Files\Utils\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Timer\igluGPUTimer.cpp">
+      <Filter>Source Files\Utils\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random\igluHalton1D.cpp">
+      <Filter>Source Files\Utils\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random\igluHalton2D.cpp">
+      <Filter>Source Files\Utils\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random\igluHammersley2D.cpp">
+      <Filter>Source Files\Utils\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random\igluRandom.cpp">
+      <Filter>Source Files\Utils\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random\igluSampler2D.cpp">
+      <Filter>Source Files\Utils\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\GLSLShaders\igluShaderProgram.cpp">
+      <Filter>Source Files\Utils\GLSLShaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\GLSLShaders\igluShaderStage.cpp">
+      <Filter>Source Files\Utils\GLSLShaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\GLSLShaders\igluShaderVariable.cpp">
+      <Filter>Source Files\Utils\GLSLShaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Capture\igluFrameGrab.cpp">
+      <Filter>Source Files\Utils\Capture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluImage.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluRandomTexture2D.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluTexture.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluTexture2D.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluTextureBuffer.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluTextureLightprobeCubemap.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\igluVideoTexture2D.cpp">
+      <Filter>Source Files\Utils\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\igluBMP.cpp">
+      <Filter>Source Files\Utils\Input\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\igluJPEG.cpp">
+      <Filter>Source Files\Utils\Input\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\igluPPM.cpp">
+      <Filter>Source Files\Utils\Input\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\igluRGB.cpp">
+      <Filter>Source Files\Utils\Input\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jaricom.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcapimin.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcapistd.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcarith.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jccoefct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jccolor.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcdctmgr.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jchuff.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcinit.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmainct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmarker.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcmaster.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcomapi.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcparam.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcprepct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jcsample.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jctrans.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdapimin.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdapistd.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdarith.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdatadst.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdatasrc.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdcoefct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdcolor.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jddctmgr.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdhuff.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdinput.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmainct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmarker.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmaster.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdmerge.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdpostct.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdsample.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jdtrans.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jerror.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctflt.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctfst.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jfdctint.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctflt.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctfst.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jidctint.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jmemmgr.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jmemnobs.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jpegtran.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jquant1.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jquant2.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Images\jpeg\jutils.c">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Video\igluVideo.cpp">
+      <Filter>Source Files\Utils\Input\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Models\igluOBJMaterial.cpp">
+      <Filter>Source Files\Utils\Input\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\Models\igluOBJReader.cpp">
+      <Filter>Source Files\Utils\Input\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\TextParsing\igluFileParser.cpp">
+      <Filter>Source Files\Utils\Input\TextParsing</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\TextParsing\igluTextParsing.cpp">
+      <Filter>Source Files\Utils\Input\TextParsing</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Input\BuiltIns\igluButtonImages.cpp">
+      <Filter>Source Files\Utils\Input\BuiltIns</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\RenderToTexture\igluFramebuffer.cpp">
+      <Filter>Source Files\Utils\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture.cpp">
+      <Filter>Source Files\Utils\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2D.cpp">
+      <Filter>Source Files\Utils\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2DArray.cpp">
+      <Filter>Source Files\Utils\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\RenderToTexture\igluRenderTexture2DMultisample.cpp">
+      <Filter>Source Files\Utils\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\DrawingUtils\igluDrawingUtils.cpp">
+      <Filter>Source Files\Utils\DrawingUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\DrawingUtils\igluDrawText.cpp">
+      <Filter>Source Files\Utils\DrawingUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\DrawingUtils\igluDrawTexture.cpp">
+      <Filter>Source Files\Utils\DrawingUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\DrawingUtils\igluGeomUtils.cpp">
+      <Filter>Source Files\Utils\DrawingUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Interface\iglu2DMouseRotator.cpp">
+      <Filter>Source Files\Utils\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Interface\igluMainWindow.cpp">
+      <Filter>Source Files\Utils\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Interface\igluMouseInteractor.cpp">
+      <Filter>Source Files\Utils\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Interface\igluMouseTranslator.cpp">
+      <Filter>Source Files\Utils\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Interface\igluTrackball.cpp">
+      <Filter>Source Files\Utils\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\OpenGLState\igluTransformFeedback.cpp">
+      <Filter>Source Files\Utils\OpenGLState</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\OpenGLState\igluVertexArrayObject.cpp">
+      <Filter>Source Files\Utils\OpenGLState</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Window\igluMultiDisplayWidgetWindow.cpp">
+      <Filter>Source Files\Utils\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Window\igluMultiDisplayWindow.cpp">
+      <Filter>Source Files\Utils\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Window\igluWidgetWindow.cpp">
+      <Filter>Source Files\Utils\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Window\igluWindow.cpp">
+      <Filter>Source Files\Utils\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Errors\igluErrorExit.cpp">
+      <Filter>Source Files\Utils\Errors</Filter>
+    </ClCompile>
+    <ClCompile Include="Datatypes\Matrices\igluMatrix4x4.cpp">
+      <Filter>Source Files\DataTypes\Matrices</Filter>
+    </ClCompile>
+    <ClCompile Include="Datatypes\UIVars\igluBool.cpp">
+      <Filter>Source Files\DataTypes\UIVars</Filter>
+    </ClCompile>
+    <ClCompile Include="Datatypes\UIVars\igluFloat.cpp">
+      <Filter>Source Files\DataTypes\UIVars</Filter>
+    </ClCompile>
+    <ClCompile Include="Datatypes\UIVars\igluInt.cpp">
+      <Filter>Source Files\DataTypes\UIVars</Filter>
+    </ClCompile>
+    <ClCompile Include="Datatypes\UIVars\igluVariable.cpp">
+      <Filter>Source Files\DataTypes\UIVars</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jdct.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jerror.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jinclude.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jmemsys.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jmorecfg.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jpegint.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jpeglib.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\jpeg\jversion.h">
+      <Filter>Source Files\Utils\Input\Images\jpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\BuiltIns\igluPlusButton.h">
+      <Filter>Source Files\Utils\Input\BuiltIns</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\DrawingUtils\igluBitmapFont1.h">
+      <Filter>Source Files\Utils\DrawingUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluMath.h">
+      <Filter>Header Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluOrthoNormalBasis.h">
+      <Filter>Header Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluBuffer.h">
+      <Filter>Header Files\Utils\GPUBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluCPUTimer.h">
+      <Filter>Header Files\Utils\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluFrameRate.h">
+      <Filter>Header Files\Utils\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluGPUTimer.h">
+      <Filter>Header Files\Utils\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\sampling\igluHalton1D.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\sampling\igluHalton2D.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\sampling\igluHammersley2D.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRandom.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\sampling\igluSampler2D.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluSampling.h">
+      <Filter>Header Files\Utils\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluShaderProgram.h">
+      <Filter>Header Files\Utils\GLSLShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluShaderStage.h">
+      <Filter>Header Files\Utils\GLSLShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluShaderVariable.h">
+      <Filter>Header Files\Utils\GLSLShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluFrameGrab.h">
+      <Filter>Header Files\Utils\Capture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluImage.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRandomTexture2D.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluTexture.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluTexture2D.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluTextureBuffer.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluTextureLightprobeCubemap.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluVideoTexture2D.h">
+      <Filter>Header Files\Utils\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\igluBMP.h">
+      <Filter>Header Files\Utils\Input\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\igluJPEG.h">
+      <Filter>Header Files\Utils\Input\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\igluPPM.h">
+      <Filter>Header Files\Utils\Input\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\Images\igluRGB.h">
+      <Filter>Header Files\Utils\Input\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluVideo.h">
+      <Filter>Header Files\Utils\Input\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\models\igluModel.h">
+      <Filter>Header Files\Utils\Input\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluModels.h">
+      <Filter>Header Files\Utils\Input\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\models\igluOBJMaterial.h">
+      <Filter>Header Files\Utils\Input\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\models\igluOBJReader.h">
+      <Filter>Header Files\Utils\Input\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\parsing\igluFileParser.h">
+      <Filter>Header Files\Utils\Input\TextParsing</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluParsing.h">
+      <Filter>Header Files\Utils\Input\TextParsing</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\parsing\igluTextParsing.h">
+      <Filter>Header Files\Utils\Input\TextParsing</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Input\BuiltIns\igluBuiltInTextures.h">
+      <Filter>Header Files\Utils\Input\BuiltIns</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluFramebuffer.h">
+      <Filter>Header Files\Utils\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRenderTexture.h">
+      <Filter>Header Files\Utils\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRenderTexture2D.h">
+      <Filter>Header Files\Utils\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRenderTexture2DArray.h">
+      <Filter>Header Files\Utils\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRenderTexture2DMultisample.h">
+      <Filter>Header Files\Utils\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluDrawingUtils.h">
+      <Filter>Header Files\Utils\DrawingUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluGeomUtils.h">
+      <Filter>Header Files\Utils\DrawingUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interactors\iglu2DMouseRotator.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interface\igluCallback.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interface\igluMainWindow.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interactors\igluMouseInteractor.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interactors\igluMouseTranslator.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\interactors\igluTrackball.h">
+      <Filter>Header Files\Utils\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\glstate\igluVertexArrayObject.h">
+      <Filter>Header Files\Utils\OpenGLState</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\window\igluDisplayMode.h">
+      <Filter>Header Files\Utils\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\window\igluMultiDisplayWidgetWindow.h">
+      <Filter>Header Files\Utils\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\window\igluMultiDisplayWindow.h">
+      <Filter>Header Files\Utils\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\window\igluWidgetWindow.h">
+      <Filter>Header Files\Utils\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\window\igluWindow.h">
+      <Filter>Header Files\Utils\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\errors\igluErrorExit.h">
+      <Filter>Header Files\Utils\Errors</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\errors\igluErrors.h">
+      <Filter>Header Files\Utils\Errors</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluArray1D.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\consts\igluColors.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluInterval.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluRange.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluVector.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\dvec2.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\dvec3.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\dvec4.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\int2.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\int3.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\int4.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\uint2.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\uint3.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\uint4.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\vec2.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\vec3.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\vectors\vec4.h">
+      <Filter>Header Files\Datatypes\GPUTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluMatrix4x4.h">
+      <Filter>Header Files\Datatypes\Matrices</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\helpers\igluCountedPtr.h">
+      <Filter>Header Files\Datatypes\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\variables\igluBool.h">
+      <Filter>Header Files\Datatypes\UIVars</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\variables\igluFloat.h">
+      <Filter>Header Files\Datatypes\UIVars</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\variables\igluInt.h">
+      <Filter>Header Files\Datatypes\UIVars</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\variables\igluVariable.h">
+      <Filter>Header Files\Datatypes\UIVars</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

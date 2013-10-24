@@ -1,0 +1,244 @@
+/******************************************************************/
+/* igluWidgetWindow.cpp                                           */
+/* -----------------------                                        */
+/*                                                                */
+/* A class encapuslating an FLTK window that can contain other    */
+/*     windows & widgets.                                         */
+/*                                                                */
+/*                                                                */
+/* Chris Wyman (02/21/2012)                                       */
+/******************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "iglu.h"
+
+#include <FL/Fl_Hor_Value_Slider.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Hor_Slider.H>
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Text_Buffer.H>
+
+#if defined _WIN32 || defined _WIN64
+        #include <GL/wglew.h>
+#else
+        #include <GL/glxew.h>
+#endif
+
+
+using namespace iglu;
+
+
+IGLUMultiDisplayWidgetWindow::IGLUMultiDisplayWidgetWindow( int width, int height, const char *title ) :
+	Fl_Double_Window( 25, 50, width, height, title ), 
+	m_isRunning(false), m_noResize(true), m_curRightPane(-1),
+	m_labelOffset(20), m_betweenOffset(26), m_displayCounter(0)
+{
+	// Create the left pane to control the current display mode
+	m_leftPane  = new Fl_Group( 0, 0, width/2, height );		
+		SetupLeftPane();
+	m_leftPane->end();
+
+	// Create the right pane that will include developer-specified,
+	//    display-mode specific variables and UI.
+	/*begin();
+	m_rightPane = new Fl_Scroll( width/2, 0, width/2-1, height );
+	m_rightPane->type( Fl_Scroll::VERTICAL_ALWAYS );
+	m_rightPane->box( FL_DOWN_BOX );
+	m_rightPane->end();
+	*/
+}
+
+IGLUMultiDisplayWidgetWindow::~IGLUMultiDisplayWidgetWindow()
+{
+	for (uint i=0; i < widgets.Size(); i++)
+		delete widgets[i];
+	for (uint i=0; i < m_rightPane.Size(); i++)
+		delete m_rightPane[i];
+	delete m_leftPane;
+}
+
+void IGLUMultiDisplayWidgetWindow::CreateNewRightPane( void )
+{
+	begin();
+	m_currentY.Add( 10 );
+	uint curPane = m_rightPane.Add( new Fl_Scroll( w()/2, 0, w()/2-1, h() ) );
+	m_rightPane[curPane]->type( Fl_Scroll::VERTICAL_ALWAYS );
+	m_rightPane[curPane]->box( FL_DOWN_BOX );
+	m_rightPane[curPane]->hide();
+	m_rightPane[curPane]->end();
+	end();
+}
+
+// Display the specified widget pane
+void IGLUMultiDisplayWidgetWindow::SetCurrentRightPane( int paneNum )
+{	
+	if (m_curRightPane >= 0)
+		m_rightPane[m_curRightPane]->hide();
+	m_rightPane[paneNum]->show();
+	m_curRightPane = paneNum;
+}
+
+void IGLUMultiDisplayWidgetWindow::SetupLeftPane( void )
+{
+	m_displayModeName = new Fl_Box( m_leftPane->x()+6, 5, 1, 20, "Blah blah blah..." );
+	m_displayModeName->align(FL_ALIGN_RIGHT);
+
+	m_displayModeSelector = new Fl_Hor_Slider( m_leftPane->x()+10, 25, m_leftPane->w()-40, 20 );
+	m_displayModeSelector->align(FL_ALIGN_LEFT);
+	m_displayModeSelector->step( 1 );
+	m_displayModeSelector->value( 0 );
+	m_displayModeSelector->bounds( 0, 0 );
+	m_displayModeSelector->callback( IGLUMultiDisplayWidgetWindow::SelectedModeCallback, (void *)this );
+
+	m_displayModeDescriptor = new Fl_Text_Display( m_leftPane->x()+10, 60, m_leftPane->w()-40, 150 );
+	m_displayModeDescriptor->align(FL_ALIGN_LEFT);
+	m_displayModeDescriptor->box( FL_DOWN_BOX );
+	m_displayModeDescriptor->wrap_mode( Fl_Text_Display::WRAP_AT_BOUNDS, 5 );
+}
+
+
+void IGLUMultiDisplayWidgetWindow::SetDisplayModeText( const char *modeName )
+{
+	m_displayModeName->copy_label( modeName );
+	m_displayModeName->labelfont( FL_HELVETICA | FL_BOLD );
+}
+
+void IGLUMultiDisplayWidgetWindow::SetDisplayCounter( IGLUInt *uiInt )
+{
+	// Update our slider parameters based on the specified IGLUInt 
+	m_displayModeSelector->step( uiInt->GetDelta() );
+	m_displayModeSelector->value( uiInt->GetValue() );
+	m_displayModeSelector->bounds( uiInt->GetMinValue(), uiInt->GetMaxValue() );
+
+	// Remember which counter we're using to store our display mode
+	m_displayCounter = uiInt;
+}
+
+void IGLUMultiDisplayWidgetWindow::SetDisplayDescriptionText( const char *modeDscr )
+{
+	// Get the buffer associated with our Fl_Text_Display
+	Fl_Text_Buffer *tmpBuf = m_displayModeDescriptor->buffer();
+
+	// If may not actually have one yet...  If not, create one and tell
+	//     our display about it.
+	if (!tmpBuf) {
+		tmpBuf = new Fl_Text_Buffer();
+		m_displayModeDescriptor->buffer( tmpBuf );
+	}
+
+	// Add/Change the text in the buffer
+	tmpBuf->text( modeDscr );
+}
+
+
+void IGLUMultiDisplayWidgetWindow::CreateWindow( int argc, char **argv )
+{
+	end();
+	show( argc, argv );  // Create the FLTK window	
+	m_isRunning = true;
+}
+
+
+void IGLUMultiDisplayWidgetWindow::AddWidget( uint paneID, IGLUFloat *uiFloat )
+{
+	m_rightPane[paneID]->begin();
+	Fl_Box *box = new Fl_Box( m_rightPane[paneID]->x()+6, m_currentY[paneID], 1, 20, uiFloat->GetName() );
+	box->align(FL_ALIGN_RIGHT);
+	m_currentY[paneID] += m_labelOffset;
+	widgets.Add( box );
+
+	Fl_Hor_Value_Slider *slider = new Fl_Hor_Value_Slider( m_rightPane[paneID]->x()+10, m_currentY[paneID], 
+		                                                   m_rightPane[paneID]->w()-40, 20 );
+	slider->align(FL_ALIGN_LEFT);
+	slider->value( double(uiFloat->GetValue()) );
+	slider->bounds( double(uiFloat->GetMinValue()), double(uiFloat->GetMaxValue()) );
+	slider->callback( IGLUFloat::FLTKCallback, (void *)uiFloat );
+
+	// This is a really ugly kludge to set the step size correctly.  Evidently, FLTK uses
+	//    the number of significant figures in the input to step() to determine how many
+	//    digits to print.  However, converting from a float->double introduces numerical
+	//    errors which give spurious "significant" digits, causing the slider text to
+	//    extend beyond the box and renders the display illegible.
+	// To get around this, we move 4 digits to the left of the decimal, round to the nearest
+	//    integer (the int(x+0.5)), then move 4 digits to the right of the decimal in a 
+	//    double precision format.
+	// This limits this approach to slider steps of 0.0001...  But this is all that is
+	//    feasibly legible in this particular slider box.
+	slider->step( int(double(uiFloat->GetDelta())*10000+0.5)/10000.0 );
+
+	m_rightPane[paneID]->end();
+
+	uiFloat->FLTKSetValuator( (void *)slider );
+	widgets.Add( slider );
+
+	m_currentY[paneID] += m_betweenOffset;
+}
+
+void IGLUMultiDisplayWidgetWindow::AddWidget( uint paneID, IGLUInt *uiInt )
+{
+	m_rightPane[paneID]->begin();
+	Fl_Box *box = new Fl_Box( m_rightPane[paneID]->x()+6, m_currentY[paneID], 1, 20, uiInt->GetName() );
+	box->align(FL_ALIGN_RIGHT);
+	m_currentY[paneID] += m_labelOffset;
+	widgets.Add( box );
+
+	Fl_Hor_Value_Slider *slider = new Fl_Hor_Value_Slider( m_rightPane[paneID]->x()+10, m_currentY[paneID], 
+		                                                   m_rightPane[paneID]->w()-40, 20 );
+	slider->align(FL_ALIGN_LEFT);
+	slider->step( uiInt->GetDelta() );
+	slider->value( uiInt->GetValue() );
+	slider->bounds( uiInt->GetMinValue(), uiInt->GetMaxValue() );
+	slider->callback( IGLUInt::FLTKCallback, (void *)uiInt );
+	m_rightPane[paneID]->end();
+
+	uiInt->FLTKSetValuator( (void *)slider );
+	widgets.Add( slider );
+
+	m_currentY[paneID] += m_betweenOffset;
+}
+
+void IGLUMultiDisplayWidgetWindow::AddWidget( uint paneID, IGLUBool *uiBool )
+{
+	m_rightPane[paneID]->begin();
+	Fl_Check_Button *check = new Fl_Check_Button( m_rightPane[paneID]->x()+10, m_currentY[paneID], 
+		                                          m_rightPane[paneID]->w()-40, 20, uiBool->GetName() );
+	check->callback( IGLUBool::FLTKCallback, (void *)uiBool );
+	check->value( uiBool->GetValue() ? 1 : 0 );
+	m_currentY[paneID] += m_betweenOffset;
+
+	uiBool->FLTKSetValuator( (void *)check );
+	widgets.Add( check );
+	m_rightPane[paneID]->end();
+}
+
+// If we close via the 'Esc' key, we want to kill the whole program...
+int IGLUMultiDisplayWidgetWindow::handle( int event )
+{
+	switch( event ) 
+	{
+	// Check for 'Esc' --> Hard code to 'quit'
+	case FL_KEYBOARD:
+		if (Fl::event_text()[0] == 27)
+			exit(0);
+	}
+
+	return Fl_Double_Window::handle( event );
+}
+
+void IGLUMultiDisplayWidgetWindow::UpdateSelectedMode( Fl_Widget *widget )
+{
+	if (widget != m_displayModeSelector)
+		ErrorExit("Unexpected input to UpdateSelectedMode() callback!\n", __FILE__, __FUNCTION__, __LINE__);
+
+	// Update the m_displayCounter's value.  
+	m_displayCounter->SetValue( int(m_displayModeSelector->value()) );
+}
+
+void IGLUMultiDisplayWidgetWindow::SelectedModeCallback( Fl_Widget *widget, void *winHandle )
+{
+	IGLUMultiDisplayWidgetWindow *myWin = (IGLUMultiDisplayWidgetWindow *)winHandle;
+	myWin->UpdateSelectedMode( widget );
+}

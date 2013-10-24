@@ -1,0 +1,374 @@
+/******************************************************************/
+/* igluFramebuffer.cpp                                            */
+/* -----------------------                                        */
+/*                                                                */
+/* The file defines a class that encapsulates framebuffer objects */
+/*    for rendering into texture or multiple textures.            */
+/*                                                                */
+/* Chris Wyman (10/11/2011)                                       */
+/******************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <GL/glew.h>
+#include <GL/glut.h>
+
+#include "iglu.h"
+
+#include "igluFramebuffer.h"
+
+using namespace iglu;
+
+namespace {
+// This is used for setting up glDrawBuffers().  If you want to change the "order" of output texture in a multi-render
+//    target FBO, then (for goodness sake!) just modify it explicitly in your shaders by using layout(location=x) on
+//    your output variables.  You shouldn't really need to manipulate the order they're bound.  So here we just bind them
+//    in numerical order.  Keeps things clean.  (Except for this silly constant buffer.)
+const GLenum colorAttachBufs[16] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                     GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7,
+                                     GL_COLOR_ATTACHMENT8, GL_COLOR_ATTACHMENT9, GL_COLOR_ATTACHMENT10, GL_COLOR_ATTACHMENT11,
+                                     GL_COLOR_ATTACHMENT12, GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15 };
+}
+
+IGLUFramebuffer::IGLUFramebuffer() :
+	m_fboTextureType(0), m_isRenderable(false), m_clearBits(0),
+	m_width(-1), m_height(-1), m_isBound(false), m_isShadowMapFBO(false),
+	m_setDrawBufsOnBind(false)
+{
+	// Create a framebuffer
+	glGenFramebuffers( 1, &m_fboID );
+
+	// Make sure the class knows the maximum number of color buffers
+	glGetIntegerv( GL_MAX_COLOR_ATTACHMENTS, &m_maxColorBufs );
+}
+
+IGLUFramebuffer::~IGLUFramebuffer()
+{
+	glDeleteFramebuffers( 1, &m_fboID );
+}
+
+void IGLUFramebuffer::Bind( bool storePrevBinding )
+{
+	// If we're already bound, do nothing....
+	if (m_isBound) return;
+
+	// If asked, remember what FBO we were currently bound onto
+	if (storePrevBinding)
+		glGetIntegerv( GL_FRAMEBUFFER_BINDING, &m_prevBinding );
+	else 
+		m_prevBinding = 0;
+
+	// Set the new binding, update the viewport to the appropriate size
+	glGetFloatv( GL_VIEWPORT, m_prevViewport );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboID );
+	glViewport( 0, 0, m_width, m_height );
+	if (m_setDrawBufsOnBind)
+		glDrawBuffers( m_colorBufs.Size(), colorAttachBufs );
+	if (m_isShadowMapFBO)
+		glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
+	m_isBound = true;
+}
+
+void IGLUFramebuffer::Unbind( void )
+{
+	// If we are not bound, do nothing....
+	if (!m_isBound) return;
+
+	// Unbind the buffer.
+	if (m_setDrawBufsOnBind)
+		glDrawBuffers( 1, colorAttachBufs );
+	if (m_isShadowMapFBO)
+		glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_prevBinding );
+
+	// Reset the viewport to the state it was previously.
+	glViewportIndexedfv( 0, m_prevViewport );
+	m_isBound = false;
+}
+
+bool IGLUFramebuffer::CheckTextureType( GLuint texType )
+{
+	if (!m_fboTextureType)
+		m_fboTextureType = texType;
+	return (m_fboTextureType == texType);
+}
+
+void IGLUFramebuffer::ErrorTextureTypeMismatch( GLuint inputType )
+{
+	printf("*** Error: IGLUFramebuffer buffer-type mismatch (%d and %d bound)\n", inputType, m_fboTextureType);
+}
+
+bool IGLUFramebuffer::AttachTexture( int buffer, IGLURenderTexture *tex )
+{
+	// All attachements need to be the same type (e.g., GL_TEXTURE_2D or GL_TEXTURE_CUBE)
+	if (!CheckTextureType( tex->GetTextureType() ))
+	{
+		ErrorTextureTypeMismatch( tex->GetTextureType() );
+		return false;
+	}
+
+	// If we haven't attached a texture yet, find the size.  If we already have
+	//     a texture attached, the renderable area is the intersection of the two
+	//     textures, so get that region.
+	m_width  = (m_width<0)  ? tex->GetWidth()  : min(m_width,tex->GetWidth());
+	m_height = (m_height<0) ? tex->GetHeight() : min(m_height,tex->GetHeight());
+
+	// Figure out where to attach this new buffer we got.
+	GLenum attachment;
+	if (buffer >= IGLU_COLOR && buffer < IGLU_COLOR_MAX)
+	{
+		attachment = GL_COLOR_ATTACHMENT0 + m_colorBufs.Size();
+		m_clearBits |= GL_COLOR_BUFFER_BIT;
+		m_colorBufs.Add( tex );
+	}
+	if (buffer == IGLU_DEPTH)
+	{
+		attachment = GL_DEPTH_ATTACHMENT;
+		m_clearBits |= GL_DEPTH_BUFFER_BIT;
+		m_depthBufs.Add( tex );
+	}
+	if (buffer == IGLU_STENCIL)
+	{
+		attachment = GL_STENCIL_ATTACHMENT;
+		m_clearBits |= GL_STENCIL_BUFFER_BIT;
+		m_stencilBufs.Add( tex );
+	}
+	if (buffer == IGLU_DEPTH_STENCIL)
+	{
+		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+		m_clearBits |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+		m_depthBufs.Add( tex );
+		m_stencilBufs.Add( tex );
+	}
+
+	// If the developer is binding too many textures, give a warning!
+	if ( m_colorBufs.Size() > uint(m_maxColorBufs) ||
+		 m_depthBufs.Size() > 1                    ||
+		 m_stencilBufs.Size() > 1 )
+		printf("*** Error: IGLUFramebuffer has too many buffers bound!\n" );
+
+	// OK, go ahead and bind the renderable texture to the FBO.
+	Bind( true );
+	glFramebufferTexture( GL_FRAMEBUFFER, 
+		                  attachment,
+						  tex->GetTextureID(),
+						  0 );
+
+	// Update our status to see if the buffer is now drawable...
+	m_isRenderable = (glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE);
+
+	// Ok.  Done.
+	Unbind();
+
+	return true;
+}
+
+void IGLUFramebuffer::Clear( void )
+{
+	glClear( m_clearBits );
+}
+
+IGLURenderTexture &IGLUFramebuffer::operator[] ( int buffer )
+{
+	if (buffer == IGLU_DEPTH)
+	{
+		if ( m_depthBufs.Size() <= 0 )
+		{
+			printf("***Error!  Accessing NULL buffer attachment (depth buffer)\n");
+			exit(-1);
+		}
+		return *(m_depthBufs[0]);
+	}
+	if (buffer == IGLU_STENCIL)
+	{
+		if ( m_stencilBufs.Size() <= 0 )
+		{
+			printf("***Error!  Accessing NULL buffer attachment (stencil buffer)\n");
+			exit(-1);
+		}
+		return *(m_stencilBufs[0]);
+	}
+
+	if ( m_colorBufs.Size() < uint(buffer - IGLU_COLOR) )
+	{
+		printf("***Error!  Accessing NULL buffer attachment (color buffer #%d)\n", buffer - IGLU_COLOR);
+		exit(-1);
+	}
+	return *(m_colorBufs[buffer-IGLU_COLOR]);
+}
+
+IGLURenderTexture *IGLUFramebuffer::GetAttachment( int buffer )
+{
+	if (buffer == IGLU_DEPTH)
+	{
+		assert( m_depthBufs.Size() > 0 );
+		return m_depthBufs[0];
+	}
+	if (buffer == IGLU_STENCIL)
+	{
+		assert( m_stencilBufs.Size() > 0 );
+		return m_stencilBufs[0];
+	}
+
+	assert( m_colorBufs.Size() > (buffer - IGLU_COLOR) );
+	return m_colorBufs[buffer-IGLU_COLOR];
+}
+
+IGLUFramebuffer::Ptr IGLUFramebuffer::Create( GLenum internalFormat, int width, int height, bool hasDepth, bool hasStencil )
+{
+	// Did the user ask for a shadow map?
+	if (internalFormat == IGLU_FBO_SHADOW_MAP)
+		return IGLUFramebuffer::CreateShadowMap( width, height );
+
+	// Nope.  It's a normal framebuffer.  Create it.
+	IGLUFramebuffer::Ptr tmp = new IGLUFramebuffer();
+	tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2D( width, height, internalFormat ) );
+
+	if (hasDepth && !hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH, new IGLURenderTexture2D( width, height, GL_DEPTH_COMPONENT24 ) );
+	else if (!hasDepth && hasStencil)
+	{
+		printf("*** Warning:  IGLUFramebuffer::Create() trying to create a stenciled texture with\n");
+		printf("              no depth!  This is untested, and unlikely to work.  Try using both\n");
+		printf("              depth and stencil planes.  This is tested.\n");
+		tmp->AttachTexture( IGLU_STENCIL, new IGLURenderTexture2D( width, height, GL_STENCIL_INDEX8 ) );
+	}
+	else if (hasDepth && hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH_STENCIL, new IGLURenderTexture2D( width, height, GL_DEPTH24_STENCIL8 ) );
+
+	return tmp;
+}
+
+IGLUFramebuffer::Ptr IGLUFramebuffer::CreateMRT( GLenum internalFormat, int width, int height, int numColorTargets, bool hasDepth )
+{
+	// Did the user ask for a shadow map?  Odd.
+	if (internalFormat == IGLU_FBO_SHADOW_MAP)
+	{
+		Warning("CreateMRT() called asking for a shadow map (IGLU_FBO_SHADOW_MAP).  Shadow MRT\n"
+			    "buffers make little sense, since there is only one depth plane for all render\n"
+				"targets!  If you want a shadow-only map, why create all those color planes??\n"
+				"(Ignoring request.  May produce unexpected results!)\n", __FILE__, __FUNCTION__, __LINE__ );
+		internalFormat = GL_RGBA8;
+	}
+
+	// Nope.  It's a normal framebuffer.  Create it.
+	IGLUFramebuffer::Ptr tmp = new IGLUFramebuffer();
+	tmp->m_setDrawBufsOnBind = true;
+	for ( int i=0; i < numColorTargets; i++ )
+		tmp->AttachTexture( IGLU_COLOR0+i, new IGLURenderTexture2D( width, height, internalFormat ) );
+
+	if ( hasDepth )
+		tmp->AttachTexture( IGLU_DEPTH, new IGLURenderTexture2D( width, height, GL_DEPTH_COMPONENT24 ) );
+
+	return tmp;
+}
+
+IGLUFramebuffer::Ptr IGLUFramebuffer::CreateShadowMap( int width, int height, uint type, int addlNum )
+{
+	IGLURenderTexture::Ptr tmpTex;
+	IGLUFramebuffer::Ptr tmp = new IGLUFramebuffer();
+	tmp->m_isShadowMapFBO = true;
+
+	if (type == IGLU_FBO_BASIC_SHADOW_MAP)
+	{
+		tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2D( width, height, GL_R8 ) );
+		tmp->AttachTexture( IGLU_DEPTH, tmpTex = new IGLURenderTexture2D( width, height, GL_DEPTH_COMPONENT24 ) );
+		tmpTex->SetTextureParameters( IGLU_MAG_NEAREST | IGLU_MIN_NEAREST );
+	}
+	else if (type == IGLU_FBO_ARRAY_SHADOW_MAP)
+	{
+		tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2DArray( width, height, addlNum, GL_R8 ) );
+		tmp->AttachTexture( IGLU_DEPTH, tmpTex = new IGLURenderTexture2DArray( width, height, addlNum, GL_DEPTH_COMPONENT24 ) );
+		tmpTex->SetTextureParameters( IGLU_MAG_NEAREST | IGLU_MIN_NEAREST );
+	}
+	else if (type == IGLU_FBO_MULTISAMPLE_SHADOW_MAP)
+	{
+		tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2DMultisample( width, height, addlNum, GL_R8 ) );
+		tmp->AttachTexture( IGLU_DEPTH, tmpTex = new IGLURenderTexture2DMultisample( width, height, addlNum, GL_DEPTH_COMPONENT24 ) );
+		tmpTex->SetTextureParameters( IGLU_MAG_NEAREST | IGLU_MIN_NEAREST );
+	}
+	return tmp;
+}
+
+IGLUFramebuffer::Ptr IGLUFramebuffer::CreateMultisample( GLenum internalFormat, int width, int height, 
+	                                                     int numSamples, bool hasDepth, bool hasStencil )
+{
+	// Did the user ask for a shadow map?
+	if (internalFormat == IGLU_FBO_SHADOW_MAP)
+		return IGLUFramebuffer::CreateShadowMap( width, height, IGLU_FBO_MULTISAMPLE_SHADOW_MAP, numSamples );
+
+	// Nope.  It's a normal framebuffer.  Create it.
+	IGLUFramebuffer::Ptr tmp = new IGLUFramebuffer();
+	tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2DMultisample( width, height, numSamples, internalFormat ) );
+
+	if (hasDepth && !hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH, new IGLURenderTexture2DMultisample( width, height, numSamples, GL_DEPTH_COMPONENT24 ) );
+	else if (!hasDepth && hasStencil)
+	{
+		printf("*** Warning:  IGLUFramebuffer::CreateMultisample() trying to create a stenciled\n");
+		printf("              texture with no depth!  This is untested, and unlikely to work.\n");
+		printf("              Try using both depth and stencil planes.  This is tested.\n");
+		tmp->AttachTexture( IGLU_STENCIL, new IGLURenderTexture2DMultisample( width, height, numSamples, GL_STENCIL_INDEX8 ) );
+	}
+	else if (hasDepth && hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH_STENCIL, new IGLURenderTexture2DMultisample( width, height, numSamples, GL_DEPTH24_STENCIL8 ) );
+
+	return tmp;
+}
+
+IGLUFramebuffer::Ptr IGLUFramebuffer::CreateArray( GLenum internalFormat, int width, int height, int layers,
+	                                               bool hasDepth, bool hasStencil )
+{
+	// Did the user ask for a shadow map?
+	if (internalFormat == IGLU_FBO_SHADOW_MAP)
+		return IGLUFramebuffer::CreateShadowMap( width, height, IGLU_FBO_ARRAY_SHADOW_MAP, layers );
+
+	// Nope.  It's a normal framebuffer.  Create it.
+	IGLUFramebuffer::Ptr tmp = new IGLUFramebuffer();
+	tmp->AttachTexture( IGLU_COLOR, new IGLURenderTexture2DArray( width, height, layers, internalFormat ) );
+
+	if (hasDepth && !hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH, new IGLURenderTexture2DArray( width, height, layers, GL_DEPTH_COMPONENT24 ) );
+	else if (!hasDepth && hasStencil)
+	{
+		printf("*** Warning:  IGLUFramebuffer::CreateArray() trying to create a stenciled\n");
+		printf("              texture with no depth!  This is untested, and unlikely to work.\n");
+		printf("              Try using both depth and stencil planes.  This is tested.\n");
+		tmp->AttachTexture( IGLU_STENCIL, new IGLURenderTexture2DArray( width, height, layers, GL_STENCIL_INDEX8 ) );
+	}
+	else if (hasDepth && hasStencil)
+		tmp->AttachTexture( IGLU_DEPTH_STENCIL, new IGLURenderTexture2DArray( width, height, layers, GL_DEPTH24_STENCIL8 ) );
+
+	return tmp;
+}
+
+void IGLUFramebuffer::Resize(int width, int height)
+{	
+	// Resize the depth buffer
+	if(m_depthBufs.Size() > 0 && m_depthBufs[0]->Is2DTexture()){
+		((IGLURenderTexture2D*)m_depthBufs[0])->Resize(width, height);
+	}
+	
+	// Resize the stencil buffer
+	if(m_stencilBufs.Size() > 0 && m_depthBufs[0]->Is2DTexture()){
+		((IGLURenderTexture2D*)m_stencilBufs[0])->Resize(width, height);
+	}
+	
+	// Resize all color attachments
+	for(uint i = 0; i < m_colorBufs.Size(); i++){
+		if(m_colorBufs[i]->Is2DTexture()){
+			((IGLURenderTexture2D*)m_colorBufs[i])->Resize(width, height);
+		}
+	}
+
+	m_width = width; 
+	m_height = height;
+}
+
+void IGLUFramebuffer::Callback_UniformResize( IGLUVariable *intSize )
+{
+	IGLUInt *uiInt = (IGLUInt *)intSize;
+	Resize( uiInt->GetValue(), uiInt->GetValue() );
+}

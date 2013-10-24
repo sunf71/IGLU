@@ -1,0 +1,1134 @@
+/**************************************************************************
+** igluShaderVariable.cpp                                                **
+** -----------------------                                               **
+**                                                                       **
+** This header includes a class that can be used as an encapsulation for **
+**   shader variables inside a GLSL program.  This encapsulation is used **
+**   by the igluShaderProgram class (based on the underlying class       **
+**   igluGLSLProgram).  The reason to use this class is it allows access **
+**   to set variable values using an assignment operator, and performs   **
+**   type checking that will cause run-time error messages if data is    **
+**   assigned incorrectly.                                               **
+**                                                                       **
+** Chris Wyman (09/27/2011)                                              **
+**************************************************************************/
+
+#pragma warning( disable : 4996 )
+
+#include <assert.h>
+#include <string.h>
+#include "iglu.h"
+
+using namespace iglu;
+
+
+IGLUShaderVariable::IGLUShaderVariable( GLuint programID, const char *varName, IGLUShaderProgram *parent ) :
+	m_varIdx(-1), m_varNameLen(0), m_varSize(0), m_parent(parent), m_isAttribute(false)
+{
+	// Check...  Is this name a uniform?
+	m_varIdx = glGetUniformLocation( programID, varName );
+	if (m_varIdx >= 0) 
+		glGetActiveUniform(	programID, m_varIdx, 32,
+						&m_varNameLen, &m_varSize,
+						&m_varType, m_varName );
+	else  // Nope.  Not a uniform.  Maybe an attribute?
+	{
+		m_varIdx = glGetAttribLocation( programID, varName );
+		if (m_varIdx >= 0)
+		{
+			m_isAttribute = true;
+			glGetActiveAttrib( programID, m_varIdx, 32,
+			                   &m_varNameLen, &m_varSize,
+							   &m_varType, m_varName );
+		}
+	}
+
+	// We really have no clue what this thing is.  Print an error
+	if (m_varIdx < 0)
+	{
+		UnknownVariable( varName );
+		return;
+	}
+
+}
+
+IGLUShaderVariable::IGLUShaderVariable( const IGLUShaderVariable &copy ) :
+	m_varIdx( copy.m_varIdx ), m_varNameLen( copy.m_varNameLen ), m_varSize( copy.m_varSize ),
+	m_varType( copy.m_varType ), m_parent( copy.m_parent ), m_isAttribute( copy.m_isAttribute )
+{
+	strncpy( m_varName, copy.m_varName, 32 );
+}
+
+void IGLUShaderVariable::operator= (        float val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "float" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT && m_varType != GL_DOUBLE )
+		TypeMismatch( "float" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT )
+		glUniform1f( m_varIdx, val );
+	if ( m_varType == GL_DOUBLE )
+		glUniform1d( m_varIdx, val );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= (       double val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "double" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT && m_varType != GL_DOUBLE )
+		TypeMismatch( "double" );
+	
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT )
+		glUniform1f( m_varIdx, val );
+	if ( m_varType == GL_DOUBLE )
+		glUniform1d( m_varIdx, val );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= (          int val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "int" );
+		return;
+	}
+	if ( m_varType != GL_INT && m_varType != GL_UNSIGNED_INT )
+		TypeMismatch( "int" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT )
+		glUniform1i( m_varIdx, val );
+	if (m_varType == GL_UNSIGNED_INT )
+		glUniform1ui( m_varIdx, val );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( unsigned int val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "unsigned int" );
+		return;
+	}
+	if ( m_varType != GL_INT && m_varType != GL_UNSIGNED_INT )
+		TypeMismatch( "unsigned int" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT )
+		glUniform1i( m_varIdx, val );
+	if (m_varType == GL_UNSIGNED_INT )
+		glUniform1ui( m_varIdx, val );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( float2 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "vec2" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC2 && m_varType != GL_DOUBLE_VEC2 )
+		TypeMismatch( "vec2" );
+	
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC2 )
+		glUniform2fv( m_varIdx, 1, val.GetConstDataPtr() );
+	if ( m_varType == GL_DOUBLE_VEC2 )
+		glUniform2d( m_varIdx, val.X(), val.Y() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( double2 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "dvec2" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC2 && m_varType != GL_DOUBLE_VEC2 )
+		TypeMismatch( "dvec2" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC2 )
+		glUniform2f( m_varIdx, val.X(), val.Y() );
+	if ( m_varType == GL_DOUBLE_VEC2 )
+		glUniform2dv( m_varIdx, 1, val.GetConstDataPtr() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( int2 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "ivec2" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC2 && m_varType != GL_UNSIGNED_INT_VEC2 )
+		TypeMismatch( "ivec2" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC2 )
+		glUniform2iv( m_varIdx, 1, val.GetConstDataPtr() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC2 )
+		glUniform2ui( m_varIdx, val.X(), val.Y() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+
+void IGLUShaderVariable::operator= ( uint2 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "uivec2" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC2 && m_varType != GL_UNSIGNED_INT_VEC2 )
+		TypeMismatch( "uivec2" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC2 )
+		glUniform2i( m_varIdx, val.X(), val.Y() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC2 )
+		glUniform2uiv( m_varIdx, 1, val.GetConstDataPtr() ); 
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+	
+
+
+void IGLUShaderVariable::operator= ( float3 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "vec3" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC3 && m_varType != GL_DOUBLE_VEC3 )
+		TypeMismatch( "vec3" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC3 )
+		glUniform3fv( m_varIdx, 1, val.GetConstDataPtr() );
+	if ( m_varType == GL_DOUBLE_VEC3 )
+		glUniform3d( m_varIdx, val.X(), val.Y(), val.Z() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( double3 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "dvec3" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC3 && m_varType != GL_DOUBLE_VEC3 )
+		TypeMismatch( "dvec3" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC3 )
+		glUniform3f( m_varIdx, val.X(), val.Y(), val.Z() );
+	if ( m_varType == GL_DOUBLE_VEC3 )
+		glUniform3dv( m_varIdx, 1, val.GetConstDataPtr() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( int3 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "ivec3" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC3 && m_varType != GL_UNSIGNED_INT_VEC3 )
+		TypeMismatch( "ivec3" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC3 )
+		glUniform3iv( m_varIdx, 1, val.GetConstDataPtr() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC3 )
+		glUniform3ui( m_varIdx, val.X(), val.Y(), val.Z() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+
+void IGLUShaderVariable::operator= ( uint3 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "uivec3" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC3 && m_varType != GL_UNSIGNED_INT_VEC3 )
+		TypeMismatch( "uivec3" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC3 )
+		glUniform3i( m_varIdx, val.X(), val.Y(), val.Z() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC3 )
+		glUniform3uiv( m_varIdx, 1, val.GetConstDataPtr() ); 
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+
+
+
+void IGLUShaderVariable::operator= ( float4 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "vec4" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC4 && m_varType != GL_DOUBLE_VEC4 )
+		TypeMismatch( "vec4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC4 )
+		glUniform4fv( m_varIdx, 1, val.GetConstDataPtr() );
+	if ( m_varType == GL_DOUBLE_VEC4 )
+		glUniform4d( m_varIdx, val.X(), val.Y(), val.Z(), val.W() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( double4 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "dvec4" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_VEC4 && m_varType != GL_DOUBLE_VEC4 )
+		TypeMismatch( "dvec4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_VEC4 )
+		glUniform4f( m_varIdx, val.X(), val.Y(), val.Z(), val.W() );
+	if ( m_varType == GL_DOUBLE_VEC4 )
+		glUniform4dv( m_varIdx, 1, val.GetConstDataPtr() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( int4 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "ivec4" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC4 && m_varType != GL_UNSIGNED_INT_VEC4 )
+		TypeMismatch( "ivec4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC4 )
+		glUniform4iv( m_varIdx, 1, val.GetConstDataPtr() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC4 )
+		glUniform4ui( m_varIdx, val.X(), val.Y(), val.Z(), val.W() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+
+void IGLUShaderVariable::operator= ( uint4 val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "uivec4" );
+		return;
+	}
+	if ( m_varType != GL_INT_VEC4 && m_varType != GL_UNSIGNED_INT_VEC4 )
+		TypeMismatch( "uivec4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_INT_VEC4 )
+		glUniform4i( m_varIdx, val.X(), val.Y(), val.Z(), val.W() ); 
+	if ( m_varType == GL_UNSIGNED_INT_VEC4 )
+		glUniform4uiv( m_varIdx, 1, val.GetConstDataPtr() ); 
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}	
+
+
+void IGLUShaderVariable::operator= ( const IGLUMatrix4x4 &val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "fmat4x4" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_MAT4 )
+		TypeMismatch( "fmat4x4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_MAT4 )
+		glUniformMatrix4fv( m_varIdx, 1, GL_FALSE, val.GetConstDataPtr() );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+
+void iglu::IGLUShaderVariable::operator= ( const IGLUTexture &val )
+{
+	// Let's keep the assignment operators for textures consistent,
+	//    no matter if they're passed in with a reference or a pointer!
+	this->operator=( &val );
+}
+
+void iglu::IGLUShaderVariable::GetRHSTextureTypeName( const IGLUTexture *rhsTex, int dataType, bool isDepth, char *typeName )
+{
+	// Get the name for the base type
+	char basicType[8];
+	if (rhsTex->IsCubeTexture())
+		sprintf(basicType, "Cube");
+	else if (rhsTex->IsBufferTexture())
+		sprintf(basicType, "Buffer");
+	else if (rhsTex->Is1DTexture())
+		sprintf(basicType, "1D");
+	else if (rhsTex->Is3DTexture())
+		sprintf(basicType, "3D");
+	else // if (rhsTex->Is2DTexture())
+		sprintf(basicType, "2D");
+
+	// Get the character type prefex for the sampler (either i, u, or NULL)
+	char typePrefix[2] = { 0, 0 };
+	typePrefix[0] = dataType > 0 ? (dataType == 1 ? 'i' : 'u') : typePrefix[0]; 
+
+	sprintf( typeName, "%ssampler%s%s%s%s%s", 
+		typePrefix, 
+		basicType,
+		rhsTex->IsRectTexture() ? "Rect" : "",
+		rhsTex->IsMultisampleTexture() ? "MS" : "",
+		rhsTex->IsArrayTexture() ? "Array" : "",
+		isDepth ? "Shadow" : "" );
+}
+
+bool iglu::IGLUShaderVariable::HasTextureTypeMismatch( const IGLUTexture *rhsTex )
+{
+	// We can never do *assignment* to GLSL attributes.  (Especially for textures!)
+	if ( m_isAttribute )
+		return AssignmentToAttribute( "sampler" );
+
+	// Determine what type (float, int, uint) is the sampler on the RHS.
+	//    (XXX) Note: this is NOT correct for fancy GL_UNSIGNED_BYTE and GL_BYTE
+	//          types, (e.g., GL_RGB8UI).  For now, int/uint OpenGL byte-sized pixel 
+	//          formats will detect as floats, causing spurious mismatches.
+	int typeIdx = 3;
+	GLenum textureType = rhsTex->GetFormatDataType( rhsTex->GetTextureFormat() );
+	switch( textureType )
+	{
+	case GL_INT:
+	case GL_SHORT:
+		typeIdx = 1;    // An 'isampler' GLSL type
+		break;
+	case GL_UNSIGNED_INT:
+	case GL_UNSIGNED_SHORT:
+		typeIdx = 2;    // A 'usampler' GLSL type
+		break;
+	default:  // (e.g., GL_UNSIGNED_BYTE, GL_FLOAT, GL_HALF_FLOAT, GL_BYTE)
+		typeIdx = 0;    // A 'sampler' GLSL type
+	}
+
+	// However depth textures may detect as int.  For this function we want them as floats
+	bool rhsIsDepth = rhsTex->IsDepthFormat( rhsTex->GetTextureFormat() );
+	typeIdx = rhsIsDepth ? 0 : typeIdx;
+
+	// Now check for mismatches!
+	bool wasMismatch = false;
+	if ( (IsIntSampler( m_varType ) && typeIdx != 1) ||    // LHS is an int texture, and RHS is not
+		 (IsUIntSampler( m_varType ) && typeIdx != 2) ||   // LHS is a uint texture, and RHS is not
+		 (typeIdx == 0 && (IsIntSampler( m_varType ) || IsUIntSampler( m_varType ))) )  // RHS is a float tex, and LHS is not.
+	{
+		 wasMismatch = true;
+	}
+	else if (    (IsRectSampler( m_varType ) != rhsTex->IsRectTexture())     // RHS & LHS do not match 'Rect' attribute
+		      || (IsArraySampler( m_varType ) != rhsTex->IsArrayTexture())   // RHS & LHS do not match 'Array' attribute
+			  || (IsCubeSampler( m_varType ) != rhsTex->IsCubeTexture())     // RHS & LHS do not match 'Cube' attribute
+			  || (IsBufferSampler( m_varType ) != rhsTex->IsBufferTexture()) // RHS & LHS do not match 'Buffer' attribute
+			  //|| (IsShadowSampler( m_varType ) != rhsIsDepth)               
+			  || (IsShadowSampler( m_varType ) && !rhsIsDepth)               // We can assign a shadow texture to a non-shadow attachment, but not vice versa
+			  || (Is1DSampler( m_varType ) != rhsTex->Is1DTexture())         // RHS & LHS do not match '1D' attribute
+			  || (Is2DSampler( m_varType ) != rhsTex->Is2DTexture())         // RHS & LHS do not match '2D' attribute
+			  || (Is3DSampler( m_varType ) != rhsTex->Is3DTexture())         // RHS & LHS do not match '3D' attribute
+			  || (IsMultiSampleSampler( m_varType ) != rhsTex->IsMultisampleTexture()) ) // RHS & LHS do not match 'MS' attribute
+	{
+		wasMismatch = true;
+	}
+
+	// Ok.  If we had a mismatch, we'll want to print out an error!
+	if (wasMismatch)
+	{
+		// First, get the name of the sampler type on the RHS
+		char rhsTypeName[64];
+		GetRHSTextureTypeName( rhsTex, typeIdx, rhsIsDepth, rhsTypeName );
+
+		// Print an error, and let the caller know there was a mismatch!
+		return TypeMismatch( rhsTypeName );
+	}
+
+	// The type check worked out!
+	return false;
+}
+
+void iglu::IGLUShaderVariable::operator= ( const IGLUTexture *val )
+{
+	// Check for a valid shader index (else we have no variable to assign to!)
+	if ( m_varIdx < 0 ) return;
+
+	// Check for variable type mismatches.  
+	if ( HasTextureTypeMismatch( val ) ) return;
+
+	// OK.  We now know we can do an assignment, lets get that setup.
+	IGLUShaderTexture *ptr = 0;
+
+	// 1) Look to see if we'd previously assigned a texture to this sampler
+	//    in the parent shader.  If so, grab it's info.
+	for (uint i=0; i < m_parent->m_activeTex.Size(); i++)         // Look through list of active samplers for the parent shader
+		if ( m_parent->m_activeTex[i]->m_glslVarLoc == m_varIdx ) // Is this sampler the variable on the LHS of the assignment?
+			ptr = m_parent->m_activeTex[i];                       // If so, grab a pointer to its previously assigned tex struct.
+
+	// 2) If we already have a data structure, lets replace/update that 
+	//    texture with the one the user just specified.
+	if (ptr) ptr->m_tex = val;
+
+	// 3) If we haven't yet assigned a texture to this GLSL sampler, set up
+	//    a new structure with appropriate data, assign it the next available
+	//    texture unit (e.g., GL_TEXTURE4), and tell the shader to start
+	//    binding it whenever the shader is enabled.
+	else
+	{
+		ptr               = new IGLUShaderTexture();  // Create a structure for this sampler's texture.
+		ptr->m_tex        = val;                      // Remember the texture pointer for this sampler
+		ptr->m_glslVarLoc = m_varIdx;                 // What's the linked uniform/sampler location in GLSL?
+		ptr->m_texUnit    = int( m_parent->m_activeTex.Size() );  // What OpenGL texture unit did we assign?
+		strncpy( ptr->m_texName, m_varName, 32 );     // Copy the GLSL sampler variable name.	
+
+		// Add this to the list of textures the shader knows about.
+		m_parent->m_activeTex.Add( ptr );
+
+		// Tell the shader what texture unit to look on for this sampler
+		m_parent->PushProgram();
+			glUniform1i( m_varIdx, ptr->m_texUnit );
+		m_parent->PopProgram();
+	}
+
+	// If we're currently enabled, we'd better do the work the shader class
+	//    would normally do (in ShaderProgram::Enable()) to enable this texture.
+	if (m_parent->IsEnabled() && ptr)
+		val->Bind( GL_TEXTURE0 + ptr->m_texUnit );
+
+}
+
+
+/**************************************************************************
+** Internal utilities & error messaging methods.                         **
+**************************************************************************/
+
+bool IGLUShaderVariable::TypeMismatch( const char *type )
+{
+	char expectedType[32];
+	TypeToChar( m_varType, expectedType );
+	printf( "(GLSL MISMATCH!)  Uniform '%s' assigned %s value! (Expects: %s)\n", 
+		    m_varName, type, expectedType );
+	assert(0);
+	return false;
+}
+
+bool IGLUShaderVariable::UnknownVariable( const char *val )
+{
+	printf( "(UNKNOWN GLSL VAR!)  Accessing undefined variable or attribute '%s'!\n", val );
+	assert(0);
+	return false;
+}
+
+bool IGLUShaderVariable::AssignmentToAttribute( const char *type )
+{
+	printf( "(GLSL ERROR!)  Assigning %s value to attribute '%s'!\n", type, m_varName );
+	assert(0);
+	return false;
+}
+
+void IGLUShaderVariable::TypeToChar( GLenum varType, char *retTypeName )
+{
+	switch( varType )
+	{
+	default:
+		sprintf( retTypeName, "(unknown)" );
+		return;
+	case GL_FLOAT:
+		sprintf( retTypeName, "float" );
+		return;
+	case GL_FLOAT_VEC2:
+		sprintf( retTypeName, "vec2" );
+		return;
+	case GL_FLOAT_VEC3:
+		sprintf( retTypeName, "vec3" );
+		return;
+	case GL_FLOAT_VEC4:
+		sprintf( retTypeName, "vec4" );
+		return;
+	case GL_DOUBLE:
+		sprintf( retTypeName, "double" );
+		return;
+	case GL_DOUBLE_VEC2:
+		sprintf( retTypeName, "dvec2" );
+		return;
+	case GL_DOUBLE_VEC3:
+		sprintf( retTypeName, "dvec3" );
+		return;
+	case GL_DOUBLE_VEC4:
+		sprintf( retTypeName, "dvec4" );
+		return;
+	case GL_INT:
+		sprintf( retTypeName, "int" );
+		return;
+	case GL_INT_VEC2:
+		sprintf( retTypeName, "ivec2" );
+		return;
+	case GL_INT_VEC3:
+		sprintf( retTypeName, "ivec3" );
+		return;
+	case GL_INT_VEC4:
+		sprintf( retTypeName, "ivec4" );
+		return;
+	case GL_UNSIGNED_INT:
+		sprintf( retTypeName, "unsigned int" );
+		return;
+	case GL_UNSIGNED_INT_VEC2:
+		sprintf( retTypeName, "uivec2" );
+		return;
+	case GL_UNSIGNED_INT_VEC3:
+		sprintf( retTypeName, "uivec3" );
+		return;
+	case GL_UNSIGNED_INT_VEC4:
+		sprintf( retTypeName, "uivec4" );
+		return;
+	case GL_BOOL:
+		sprintf( retTypeName, "bool" );
+		return;
+	case GL_BOOL_VEC2:
+		sprintf( retTypeName, "bvec2" );
+		return;
+	case GL_BOOL_VEC3:
+		sprintf( retTypeName, "bvec3" );
+		return;
+	case GL_BOOL_VEC4:
+		sprintf( retTypeName, "bvec4" );
+		return;
+	case GL_FLOAT_MAT2:
+		sprintf( retTypeName, "fmat2x2" );
+		return;
+	case GL_FLOAT_MAT3:
+		sprintf( retTypeName, "fmat3x3" );
+		return;
+	case GL_FLOAT_MAT4:
+		sprintf( retTypeName, "fmat4x4" );
+		return;
+	case GL_FLOAT_MAT2x3:
+		sprintf( retTypeName, "fmat2x3" );
+		return;
+	case GL_FLOAT_MAT2x4:
+		sprintf( retTypeName, "fmat2x4" );
+		return;
+	case GL_FLOAT_MAT3x2:
+		sprintf( retTypeName, "fmat3x2" );
+		return;
+	case GL_FLOAT_MAT3x4:
+		sprintf( retTypeName, "fmat3x4" );
+		return;
+	case GL_FLOAT_MAT4x2:
+		sprintf( retTypeName, "fmat4x2" );
+		return;
+	case GL_FLOAT_MAT4x3:
+		sprintf( retTypeName, "fmat4x3" );
+		return;
+	case GL_DOUBLE_MAT2:
+		sprintf( retTypeName, "dmat2x2" );
+		return;
+	case GL_DOUBLE_MAT3:
+		sprintf( retTypeName, "dmat3x3" );
+		return;
+	case GL_DOUBLE_MAT4:
+		sprintf( retTypeName, "dmat4x4" );
+		return;
+	case GL_DOUBLE_MAT2x3:
+		sprintf( retTypeName, "dmat2x3" );
+		return;
+	case GL_DOUBLE_MAT2x4:
+		sprintf( retTypeName, "dmat2x4" );
+		return;
+	case GL_DOUBLE_MAT3x2:
+		sprintf( retTypeName, "dmat3x2" );
+		return;
+	case GL_DOUBLE_MAT3x4:
+		sprintf( retTypeName, "dmat3x4" );
+		return;
+	case GL_DOUBLE_MAT4x2:
+		sprintf( retTypeName, "dmat4x2" );
+		return;
+	case GL_DOUBLE_MAT4x3:
+		sprintf( retTypeName, "dmat4x3" );
+		return;
+	case GL_SAMPLER_1D:
+		sprintf( retTypeName, "sampler1D" );
+		return;
+	case GL_SAMPLER_2D:
+		sprintf( retTypeName, "sampler2D" );
+		return;
+	case GL_SAMPLER_3D:
+		sprintf( retTypeName, "sampler3D" );
+		return;
+	case GL_INT_SAMPLER_1D:
+		sprintf( retTypeName, "isampler1D" );
+		return;
+	case GL_INT_SAMPLER_2D:
+		sprintf( retTypeName, "isampler2D" );
+		return;
+	case GL_INT_SAMPLER_3D:
+		sprintf( retTypeName, "isampler3D" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_1D:
+		sprintf( retTypeName, "usampler1D" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_2D:
+		sprintf( retTypeName, "usampler2D" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_3D:
+		sprintf( retTypeName, "usampler3D" );
+		return;
+	case GL_SAMPLER_1D_SHADOW:
+		sprintf( retTypeName, "sampler1DShadow" );
+		return;
+	case GL_SAMPLER_2D_SHADOW:
+		sprintf( retTypeName, "sampler2DShadow" );
+		return;
+	case GL_SAMPLER_1D_ARRAY:
+		sprintf( retTypeName, "sampler1DArray" );
+		return;
+	case GL_SAMPLER_2D_ARRAY:
+		sprintf( retTypeName, "sampler2DArray" );
+		return;
+	case GL_SAMPLER_CUBE:
+		sprintf( retTypeName, "samplerCube" );
+		return;
+	case GL_SAMPLER_CUBE_SHADOW:
+		sprintf( retTypeName, "samplerCubeShadow" );
+		return;
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+		sprintf( retTypeName, "sampler1DArrayShadow" );
+		return;
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+		sprintf( retTypeName, "sampler2DArrayShadow" );
+		return;
+	case GL_SAMPLER_2D_MULTISAMPLE:
+		sprintf( retTypeName, "sampler2DMS" );
+		return;
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		sprintf( retTypeName, "sampler2DMSArray" );
+		return;
+	case GL_SAMPLER_BUFFER:
+		sprintf( retTypeName, "samplerBuffer" );
+		return;
+	case GL_SAMPLER_2D_RECT:
+		sprintf( retTypeName, "sampler2DRect" );
+		return;
+	case GL_SAMPLER_2D_RECT_SHADOW:
+		sprintf( retTypeName, "sampler2DRectShadow" );
+		return;
+	case GL_INT_SAMPLER_1D_ARRAY:
+		sprintf( retTypeName, "isampler1DArray" );
+		return;
+	case GL_INT_SAMPLER_2D_ARRAY:
+		sprintf( retTypeName, "isampler2DArray" );
+		return;
+	case GL_INT_SAMPLER_CUBE:
+		sprintf( retTypeName, "isamplerCube" );
+		return;
+	case GL_INT_SAMPLER_2D_MULTISAMPLE:
+		sprintf( retTypeName, "isampler2DMS" );
+		return;
+	case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		sprintf( retTypeName, "isampler2DMSArray" );
+		return;
+	case GL_INT_SAMPLER_BUFFER:
+		sprintf( retTypeName, "isamplerBuffer" );
+		return;
+	case GL_INT_SAMPLER_2D_RECT:
+		sprintf( retTypeName, "isampler2DRect" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+		sprintf( retTypeName, "usampler1DArray" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+		sprintf( retTypeName, "usampler2DArray" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_CUBE:
+		sprintf( retTypeName, "usamplerCube" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
+		sprintf( retTypeName, "usampler2DMS" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		sprintf( retTypeName, "usampler2DMSArray" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+		sprintf( retTypeName, "usamplerBuffer" );
+		return;
+	case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
+		sprintf( retTypeName, "usampler2DRect" );
+		return;
+	}
+}
+
+
+bool IGLUShaderVariable::Is1DSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_INT_SAMPLER_1D:
+	case GL_INT_SAMPLER_1D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_1D:
+	case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::Is2DSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+	case GL_INT_SAMPLER_2D:
+	case GL_INT_SAMPLER_2D_ARRAY:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_INT_SAMPLER_2D_RECT:
+	case GL_UNSIGNED_INT_SAMPLER_2D:
+	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::Is3DSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_3D:
+	case GL_INT_SAMPLER_3D:
+	case GL_UNSIGNED_INT_SAMPLER_3D:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsArraySampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_INT_SAMPLER_1D_ARRAY:
+	case GL_INT_SAMPLER_2D_ARRAY:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsShadowSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsCubeSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_INT_SAMPLER_CUBE:
+	case GL_UNSIGNED_INT_SAMPLER_CUBE:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsIntSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_INT_SAMPLER_1D:
+	case GL_INT_SAMPLER_2D:
+	case GL_INT_SAMPLER_3D:
+	case GL_INT_SAMPLER_CUBE:
+	case GL_INT_SAMPLER_1D_ARRAY:
+	case GL_INT_SAMPLER_2D_ARRAY:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_INT_SAMPLER_BUFFER:
+	case GL_INT_SAMPLER_2D_RECT:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsUIntSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_UNSIGNED_INT_SAMPLER_1D:
+	case GL_UNSIGNED_INT_SAMPLER_2D:
+	case GL_UNSIGNED_INT_SAMPLER_3D:
+	case GL_UNSIGNED_INT_SAMPLER_CUBE:
+	case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+	case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsRectSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+	case GL_INT_SAMPLER_2D_RECT:
+	case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsBufferSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_BUFFER:
+	case GL_INT_SAMPLER_BUFFER:
+	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+		return true;
+	}
+}
+
+bool IGLUShaderVariable::IsMultiSampleSampler( GLenum uniformType ) 
+{
+	switch( uniformType )
+	{
+	default:
+		return false;
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
+	case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		return true;
+	}
+}
+
+
+
+
+

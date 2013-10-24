@@ -1,0 +1,45 @@
+/******************************************************************/
+/* igluOBJMaterial.h                                              */
+/* -----------------------                                        */
+/*                                                                */
+/* Defines a reader for OBJ material files                        */
+/*                                                                */
+/* Chris Wyman (10/20/2011)                                       */
+/******************************************************************/
+
+#ifndef IGLU_OBJ_MATERIAL_H
+#define IGLU_OBJ_MATERIAL_H
+
+class IGLUOBJMaterial 
+{
+public:
+	IGLUOBJMaterial() {}
+
+private:
+	/////////////////////////////////////////////////////////////
+	// MTL characteristics that this class respects
+
+	char *m_matlName;            // Name specified in MTL file
+	vec4 m_amb, m_dif, m_spec;   // Ka, Kd, Ks from MTL file
+	vec4 m_trans;                // Tf from MTL file
+    float m_shininess;           // Ns from MTL file
+
+
+	/////////////////////////////////////////////////////////////
+	// MTL characteristics that this class does not (yet) respect
+
+	int m_illumModel;            // illum from MTL file 
+	float m_dissolve;            // d from MTL file
+	float m_reflSharpness;       // sharpness from MTL file
+	float m_idxRefract;          // Ni from MTL file
+};
+
+class IGLUOBJMaterialReader 
+{
+public:
+	IGLUOBJMaterialReader( char *filename ) {}
+};
+
+
+#endif
+

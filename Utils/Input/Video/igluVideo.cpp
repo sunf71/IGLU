@@ -1,0 +1,257 @@
+/******************************************************************/
+/* igluVideo.cpp                                                  */
+/* -----------------------                                        */
+/*                                                                */
+/* The file defines an video class that reads various types of    */
+/*     video files.  This class is a (currently) crude wrapper    */
+/*     around the GPL FFMpeg libraries that allows you to parse   */
+/*     a video file essentially one frame at a time.              */
+/*                                                                */
+/* To use this class in your program, you will need to link to    */
+/*     the FFMpeg libraries.  These include the following (though */
+/*     not all may be needed):                                    */
+/*        Linux:  -lavcodec -lavdevice -lavfilter -lavformat      */
+/*                -lavutil -lpostproc -lswresample -lswscale      */
+/*        Windows:  avcodec.lib, avdevice.lib, avfilter.lib,      */
+/*                  avformat.lib, avutil.lib, postproc.lib,       */
+/*                  swresample.lib, swscale.lib                   */
+/*     We tested this class against FFMpeg version 0.8.5.  It has */
+/*     been known to change APIs quite dramatically, so if you    */
+/*     use significantly later (or earlier) libraries, this may   */
+/*     not be usable!                                             */
+/*                                                                */
+/* Chris Wyman (10/06/2011)                                       */
+/******************************************************************/
+
+#if defined(HAS_FFMPEG)
+#define __STDC_FORMAT_MACROS
+extern "C" {
+#include <avcodec.h>
+#include <avformat.h>
+#include <swscale.h>
+}
+#endif
+
+#include <stdio.h>
+
+#pragma warning( disable: 4996 )
+
+#include "iglu.h"
+#include "Utils/Input/Images/igluPPM.h"
+
+using namespace iglu;
+
+// A little helper class useful only internally in this video implementation.
+class iglu::IGLUVideoIOData
+{
+public:
+
+#if defined(HAS_FFMPEG)
+	IGLUVideoIOData() : encoderSwsContext(0), videoStream(-1) {}
+
+	AVFormatContext *pFormatCtx;
+	AVCodecContext  *pCodecCtx;
+	AVCodec         *pCodec;
+	AVFrame         *pFrame; 
+    AVFrame         *pFrameRGB;
+	SwsContext      *encoderSwsContext;
+	int              videoStream;
+#else
+	IGLUVideoIOData() {}
+#endif
+};
+
+
+IGLUVideo::IGLUVideo( char *filename ) :
+	m_curFrame(0), m_width(-1), m_height(-1),
+	m_glDatatype( GL_UNSIGNED_BYTE ), m_glFormat( GL_RGB ),
+	m_imgData(0)
+{
+
+#if defined(HAS_FFMPEG)
+	// Make sure FFMpeg is set up.
+    av_register_all();
+
+	// Surpress annoying and amazingly verbose FFmpeg log messages to stderr
+	av_log_set_level( AV_LOG_QUIET );
+
+	// Create our internal data structure to store FFMpeg state
+	m_vidData = new IGLUVideoIOData();
+
+	// Open our video file!
+	if ( m_videoError = OpenVideo( filename ) )
+	{
+		printf("*** ERROR!  Problem opening video in IGLUVideo()!\n");
+		// could handle the error code more specifically here, explaining why?
+		exit(-1);
+	}
+#else
+	ErrorExit( "IGLU compiled without FFMpeg support.  Unable to use IGLUVideo()!", 
+		       __FILE__, __FUNCTION__, __LINE__ );
+#endif
+}
+
+IGLUVideo::~IGLUVideo()
+{
+#if defined(HAS_FFMPEG)
+	// Free the images
+    av_free( m_imgData );
+    av_free( m_vidData->pFrameRGB );
+    av_free( m_vidData->pFrame );
+
+	// Close the codec
+    avcodec_close(m_vidData->pCodecCtx);
+
+    // Close the video file
+    av_close_input_file(m_vidData->pFormatCtx);
+#endif
+}
+
+bool IGLUVideo::GetNextFrame( void )
+{
+#if defined(HAS_FFMPEG)
+	bool frameRead = false;
+	AVPacket framePkt;
+	
+	// Keep reading frames until we find enough from our correct video stream
+	//    to create a full video frame (or reach the end of the video)
+	while( !frameRead && av_read_frame( m_vidData->pFormatCtx, &framePkt )>=0 )
+	{
+		// Make sure the frame packet we read is from the video.
+		if (framePkt.stream_index == m_vidData->videoStream)
+		{
+			// Decode the frame packet
+			int frameFinished = 0;
+			avcodec_decode_video2(m_vidData->pCodecCtx, m_vidData->pFrame, &frameFinished, &framePkt);
+
+			// If we finished the frame
+			if (frameFinished) 
+			{
+				// Our frame is typically in YUV.  We need RGB, so covert it
+				m_vidData->encoderSwsContext = sws_getCachedContext( m_vidData->encoderSwsContext,
+			                                      m_vidData->pCodecCtx->width, m_vidData->pCodecCtx->height, 
+												  m_vidData->pCodecCtx->pix_fmt,
+												  m_vidData->pCodecCtx->width, m_vidData->pCodecCtx->height, 
+												  PIX_FMT_RGB24,
+												  SWS_BICUBIC, NULL, NULL, NULL );
+				sws_scale( m_vidData->encoderSwsContext, m_vidData->pFrame->data, m_vidData->pFrame->linesize, 0, 
+					                          m_vidData->pCodecCtx->height, m_vidData->pFrameRGB->data, 
+											  m_vidData->pFrameRGB->linesize );
+									
+				frameRead = true;
+			}
+		}
+
+		av_free_packet( &framePkt );
+	}
+
+	m_curFrame++;
+	return frameRead;
+#else
+	return false;
+#endif
+}
+
+bool IGLUVideo::GetPrevFrame( void )
+{
+	ErrorExit( "IGLUVideo::GetPrevFrame() not yet implemented!", 
+		       __FILE__, __FUNCTION__, __LINE__ );
+	return false;
+}
+
+bool IGLUVideo::SeekToFrame( unsigned int frameNum )
+{
+#if defined(HAS_FFMPEG)
+	// Set the seek flags
+	int flags = AVSEEK_FLAG_ANY | ( frameNum < m_curFrame ? AVSEEK_FLAG_BACKWARD : 0 );
+
+	// Seek to the correct position
+	if ( av_seek_frame( m_vidData->pFormatCtx, m_vidData->videoStream, frameNum, flags ) < 0 )
+		return false;
+	m_curFrame = frameNum;
+
+	// Fill buffer with the next frame after the seek location.
+	return GetNextFrame();
+
+#else  // If we not defined HAS_FFMPEG
+	return false;
+#endif
+}
+
+bool IGLUVideo::SeekToTime (        float secFromStart )
+{
+	ErrorExit( "IGLUVideo::SeekToTime() not yet implemented!", 
+		       __FILE__, __FUNCTION__, __LINE__ );
+	return false;
+}
+
+
+int IGLUVideo::OpenVideo( char *filename )
+{
+#if defined(HAS_FFMPEG)
+	// Open video file
+    if(av_open_input_file(&m_vidData->pFormatCtx, filename, NULL, 0, NULL)!=0)
+        return IGLU_ERROR_FILE_OPEN_FAILED; 
+
+    // Retrieve stream information
+    if(av_find_stream_info(m_vidData->pFormatCtx)<0)
+        return IGLU_ERROR_NO_VIDEO_STREAM; 
+
+    // Find the first video stream
+    for(unsigned i=0; i<m_vidData->pFormatCtx->nb_streams && m_vidData->videoStream<0; i++)
+        if(m_vidData->pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            m_vidData->videoStream=i;
+    if(m_vidData->videoStream < 0)
+        return IGLU_ERROR_NO_VIDEO_STREAM; 
+
+    // Get a pointer to the codec context for the video stream
+    m_vidData->pCodecCtx=m_vidData->pFormatCtx->streams[m_vidData->videoStream]->codec;
+
+    // Find the decoder for the video stream
+    m_vidData->pCodec=avcodec_find_decoder(m_vidData->pCodecCtx->codec_id);
+	if(m_vidData->pCodec==NULL)
+        return IGLU_ERROR_UNSUPPORTED_VIDEO_FILE; 
+
+    // Open codec
+    if(avcodec_open(m_vidData->pCodecCtx, m_vidData->pCodec)<0)
+        return IGLU_ERROR_IN_VIDEO_CODEC;  // Unable to open video codec...
+
+    // Allocate video frame for reading an input frame, and one for conversion
+	//    to the (RGB) format we actually need for our program
+    m_vidData->pFrame=avcodec_alloc_frame();
+    m_vidData->pFrameRGB=avcodec_alloc_frame();
+    if(m_vidData->pFrame==NULL || m_vidData->pFrameRGB==NULL)
+        return IGLU_ERROR_ALLOCATING_TEMP_MEMORY;
+
+    // Determine required buffer size and allocate buffer
+    int numBytes=avpicture_get_size(PIX_FMT_RGB24, 
+		                            m_vidData->pCodecCtx->width,
+                                    m_vidData->pCodecCtx->height);
+	m_width   = m_vidData->pCodecCtx->width;
+	m_height  = m_vidData->pCodecCtx->height;
+    m_imgData = (unsigned char *)av_malloc(numBytes*sizeof(unsigned char));
+
+    // Assign appropriate parts of buffer to image planes in pFrameRGB
+    avpicture_fill((AVPicture *)m_vidData->pFrameRGB, 
+		           (uint8_t *)m_imgData, 
+				   PIX_FMT_RGB24,
+                   m_vidData->pCodecCtx->width, 
+				   m_vidData->pCodecCtx->height);
+
+	return IGLU_NO_ERROR;
+
+#else  // If HAS_FFMPEG is not defined
+	ErrorExit( "IGLU compiled without FFMpeg support.  Unable to use IGLUVideo()!", 
+		       __FILE__, __FUNCTION__, __LINE__ );
+
+	return IGLU_ERROR_FILE_OPEN_FAILED; 
+#endif
+}
+
+void IGLUVideo::SaveFrameAsPPM( char *ppmFile )
+{
+#if defined(HAS_FFMPEG)
+	if (!IsValid()) return;
+	WritePPM( ppmFile, PPM_RAW, m_width, m_height, m_imgData );
+#endif
+}

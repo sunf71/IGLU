@@ -1,0 +1,241 @@
+###########################################################################
+##                                                                       ##
+##  This is a makefile for building the IGLU library.                    ##
+##                                                                       ##
+##  Usage:                                                               ##
+##     "make"       -> Compiles an optimized version of the library.     ##
+##     "make debug" -> Compiles a debug version of the library.          ##
+##     "make clean" -> Removes all temporary & library files.            ##
+##                                                                       ##
+##                                                                       ##
+##  Chris Wyman (January 11, 2012)                                       ##
+###########################################################################
+
+
+# This sets the name of your compiled program
+LIBNAME = libiglu.a
+
+###########################################################################
+##  Install locations for needed libraries                               ##
+##      ( e.g., FFmpeg includes in $(FFMPEG)/include/ )                  ##
+###########################################################################
+FFMPEG = /usr/local
+
+###########################################################################
+##                                                                       ##
+## To add additional files to be compiled, add them to the list of files ## 
+##   in the correct directory.  If you change the name of the directory, ##
+##   make sure you change it here!  If you move the location of a file,  ##
+##   make sure you change it here.  If you add a new directory, make     ##
+##   sure to add information about it here.                              ##	
+##                                                                       ##
+###########################################################################
+
+# The directories for various file types
+MATTYPEDIR  = Datatypes/Matrices/
+CAPUTILDIR  = Utils/Capture/
+DRAWUTILDIR = Utils/DrawingUtils/
+SHADUTILDIR = Utils/GLSLShaders/
+BUFUTILDIR  = Utils/GPUBuffers/
+INPUTILDIR  = Utils/Input/
+INTRUTILDIR = Utils/Interface/
+MATHUTILDIR = Utils/Math/
+STATEDIR    = Utils/OpenGLState/
+RNDUTILDIR  = Utils/Random/
+TOTEXDIR    = Utils/RenderToTexture/
+TIMEUTILDIR = Utils/Timer/
+IMGIODIR    = Utils/Input/Images/
+VIDIODIR    = Utils/Input/Video/
+TEXTIODIR   = Utils/Input/TextParsing/
+MODELIODIR  = Utils/Input/Models/
+
+# These should be located in $(MATTYPEDIR)
+MATRIXSRC   = igluMatrix4x4.cpp
+
+# These should be located in $(CAPUTILDIR)
+CAPTURESRC  = igluFrameGrab.cpp
+
+# These should be located in $(DRAWUTILDIR)
+DRAWUTILSRC = igluDrawText.cpp \
+	igluDrawingUtils.cpp
+
+# These should be located in $(SHADUTILDIR)
+SHADERSSRC  = igluShaderProgram.cpp \
+	igluShaderStage.cpp \
+	igluShaderVariable.cpp
+
+# These should be located in $(BUFUTILDIR)
+BUFFERSRC   = igluBuffer.cpp \
+	igluUniformBuffer.cpp
+
+# These should be located in $(INPUTILDIR)
+INPUTSRC    = igluImage.cpp \
+	igluRandomTexture2D.cpp \
+	igluTexture.cpp \
+	igluTexture2D.cpp \
+	igluTextureBuffer.cpp \
+	igluVideoTexture2D.cpp
+
+# These should be located in $(INTRUTILDIR)
+INTERFACESRC = igluTrackball.cpp
+
+# These should be located in $(MATHUTILDIR)
+MATHUTILSRC = igluMath.cpp \
+	igluOrthoNormalBasis.cpp
+
+# These should be located in $(MATTYPEDIR)
+GLSTATESRC  = igluVertexArrayObject.cpp \
+	igluTransformFeedback.cpp
+
+# These should be located in $(RNDUTILDIR)
+RANDOMSRC   = igluHalton1D.cpp \
+	igluHalton2D.cpp \
+	igluHammersley2D.cpp \
+	igluRandom.cpp \
+	igluSampler2D.cpp
+
+# These should be located in $(TOTEXDIR)
+RNDTEXTSRC  = igluFramebuffer.cpp \
+	igluRenderTexture.cpp \
+	igluRenderTexture2D.cpp \
+	igluRenderTexture2DMultisample.cpp 
+
+# These should be located in $(MATTYPEDIR)
+TIMEUITLSRC = igluCPUTimer.cpp \
+	igluFrameRate.cpp \
+	igluGPUTimer.cpp
+
+# These should be located in $(MATTYPEDIR)
+IMGIOSRC    = igluBMP.cpp \
+	igluPPM.cpp \
+	igluRGB.cpp
+
+# These should be located in $(MATTYPEDIR)
+TEXTIOSRC   = igluFileParser.cpp \
+	igluTextParsing.cpp
+
+# These should be located in $(MATTYPEDIR)
+VIDEOIOSRC  = igluVideo.cpp
+
+# These should be located in $(MATTYPEDIR)
+MODELIOSRC  = igluOBJMaterial.cpp \
+	igluOBJReader.cpp
+
+###########################################################################
+##                                                                       ##
+## If you just add files to existing directories, you should not need to ##
+##   modify anything below!                                              ##
+##                                                                       ##
+## To add additional (new) directories, you need to do 4 things:         ##
+##    1) Create a variable, above, to describe the path (e.g.,           ##
+##         "COREDIR = Core/")                                            ##
+##    2) Create a variable, above, that includes a list of files in that ##
+##         directory.                                                    ##
+##    3) Add your directory variable to the list of directories in       ##
+##         "VPATH = ..." below.                                          ##
+##    4) Add another line to the SRC variable below of the form:         ##
+##                          $(addprefix $(newDirVar), $(newSrcVar))      ##
+##                                                                       ##	
+###########################################################################
+
+# A color-separated list, e.g., $(UTILDIR):$(COREDIR):$(ANOTHERDIR)
+VPATH = $(MATTYPEDIR):$(CAPUTILDIR):$(DRAWUTILDIR):$(SHADUTILDIR):$(BUFUTILDIR):$(INPUTILDIR):$(INTRUTILDIR):$(MATHUTILDIR):$(STATEDIR):$(RNDUTILDIR):$(TOTEXDIR):$(TIMEUTILDIR):$(IMGIODIR):$(VIDIODIR):$(TEXTIODIR):$(MODELIODIR)
+
+# A list of all the src files from various directories, prepended with 
+#    their relative directory path.  If you add additional lines, make 
+#    sure you add a '\' to the end of all lines except the last!
+SRC = $(addprefix $(MATTYPEDIR),$(MATRIXSRC)) \
+	$(addprefix $(CAPUTILDIR),$(CAPTURESRC)) \
+	$(addprefix $(DRAWUTILDIR),$(DRAWUTILSRC)) \
+	$(addprefix $(SHADUTILDIR),$(SHADERSSRC)) \
+	$(addprefix $(BUFUTILDIR),$(BUFFERSRC)) \
+	$(addprefix $(INPUTILDIR),$(INPUTSRC)) \
+	$(addprefix $(INTRUTILDIR),$(INTERFACESRC)) \
+	$(addprefix $(MATHUTILDIR),$(MATHUTILSRC)) \
+	$(addprefix $(STATEDIR),$(GLSTATESRC)) \
+	$(addprefix $(RNDUTILDIR),$(RANDOMSRC)) \
+	$(addprefix $(TOTEXDIR),$(RNDTEXTSRC)) \
+	$(addprefix $(TIMEUTILDIR),$(TIMEUITLSRC)) \
+	$(addprefix $(IMGIODIR),$(IMGIOSRC)) \
+	$(addprefix $(VIDIODIR),$(VIDEOIOSRC)) \
+	$(addprefix $(TEXTIODIR),$(TEXTIOSRC)) \
+	$(addprefix $(MODELIODIR),$(MODELIOSRC)) 
+
+
+###########################################################################
+##                                                                       ##
+## You shouldn't need to change anything below, unless you want to       ##
+##   change where compiled files are stored, or you want to change the   ##
+##   name of the name of the executable, or if you want to change the    ##
+##   compilation flags or linked libraries.                              ##
+##                                                                       ##	
+###########################################################################
+
+
+# Is this a debug compile or not?
+#   This can be set to ON using "make DEBUG=ON"
+DEBUG = OFF
+
+# The C++ compiler
+CC = g++
+
+# The librarian
+AR = ar
+
+# The name of the executables (in case of optimized and debug compiles)
+OPTEXE = Release/$(LIBNAME)
+DBGEXE = Debug/$(LIBNAME)
+
+# Directories to search for includes and libraries
+INCLUDES = -I. -I ./iglu/ -I /usr/X11R6/include/ -I /group/graphics/include/ \
+	-I $(FFMPEG)/include/ -I $(FFMPEG)/include/libavcodec/ -I $(FFMPEG)/include/libavdevice/ \
+	-I $(FFMPEG)/include/libavfilter/ -I $(FFMPEG)/include/libavutil/ -I $(FFMPEG)/include/libpostproc/ \
+	-I $(FFMPEG)/include/libswresample/ -I $(FFMPEG)/include/libswscale/ -I $(FFMPEG)/include/libavformat/
+
+# Set the Flags passed to the compiler & linker. 
+#   In the first case, we use optimizations.  If debugging is on,
+#   we do not use optimizations, and we enable the profiler.
+ifeq "$(DEBUG)" "OFF"
+LDFLAGS = rcs
+CCFLAGS = -O3 -D__STDC_CONSTANT_MACROS
+EXE = $(OPTEXE)
+else
+LDFLAGS = rcs
+CCFLAGS = -g -pg -DDEBUG
+EXE = $(DBGEXE)
+endif
+
+# The linked libraries
+LIBS = -lGLEW -lglut -lGL -lGLU -lX11 -lXmu -lXi -lm -lrt
+
+# A list of objects (replace .cpp with .o)
+OBJS = $(SRC:.cpp=.o)
+
+# A list of all the objects w/o their relative directory names
+BASEOBJ = $(notdir $(OBJS))
+
+# A list of the .o files, which are stored in obj/optimized/ or obj/debug/
+ifeq "$(DEBUG)" "OFF"
+FINALOBJ = $(addprefix Release/obj/,$(BASEOBJ))
+else
+FINALOBJ = $(addprefix Debug/obj/,$(BASEOBJ))
+endif
+
+# The default make rule
+default: $(SRC) $(EXE)
+
+debug:
+	make DEBUG=ON
+
+$(EXE): $(FINALOBJ) 
+	$(AR) -r $@ $(FINALOBJ) 
+
+Release/obj/%.o: %.cpp
+	$(CC) -c $(CCFLAGS) $(INCLUDES) $< -o $@
+
+Debug/obj/%.o: %.cpp
+	$(CC) -c $(CCFLAGS) $(INCLUDES) $< -o $@
+
+clean:
+	rm -f $(addprefix Release/obj/,$(BASEOBJ)) $(addprefix Debug/obj/,$(BASEOBJ)) $(OPTEXE) $(DBGEXE)
+
