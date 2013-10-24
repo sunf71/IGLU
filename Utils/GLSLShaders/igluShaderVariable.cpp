@@ -12,6 +12,10 @@
 **                                                                       **
 ** Chris Wyman (09/27/2011)                                              **
 **************************************************************************/
+/*
+add support to glm matrix 
+Sun Feng (24/10/2013)
+*/
 
 #pragma warning( disable : 4996 )
 
@@ -535,6 +539,68 @@ void IGLUShaderVariable::operator= ( const IGLUMatrix4x4 *val )
 {
 	operator=( *val );
 }
+
+//added by sunf
+void IGLUShaderVariable::operator= ( const glm::mat4 &val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "fmat4x4" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_MAT4 )
+		TypeMismatch( "fmat4x4" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_MAT4 )
+		glUniformMatrix4fv( m_varIdx, 1, GL_FALSE, &val[0][0] );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( const glm::mat4 *val )
+{
+	operator=( *val );
+}
+
+void IGLUShaderVariable::operator= ( const glm::mat3 &val )
+{
+	// Check for a valid shader index
+	if ( m_varIdx < 0 ) return;
+
+	// Check for type mismatches
+	if ( m_isAttribute )
+	{
+		AssignmentToAttribute( "fmat3x3" );
+		return;
+	}
+	if ( m_varType != GL_FLOAT_MAT3 )
+		TypeMismatch( "fmat3x3" );
+
+	// Ensure this program is currently bound, or setting shader values fails!
+	m_parent->PushProgram();
+
+	// For types of variable that can be assigned from our input value, assign them here
+	if ( m_varType == GL_FLOAT_MAT3 )
+		glUniformMatrix3fv( m_varIdx, 1, GL_FALSE, &val[0][0] );
+
+	// We have a short "program stack" so make sure to pop off.
+	m_parent->PopProgram();
+}
+
+void IGLUShaderVariable::operator= ( const glm::mat3 *val )
+{
+	operator=( *val );
+}
+
 
 
 void iglu::IGLUShaderVariable::operator= ( const IGLUTexture &val )

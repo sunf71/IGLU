@@ -13,7 +13,10 @@
 **                                                                       **
 ** Chris Wyman (09/27/2011)                                              **
 **************************************************************************/
-
+/*
+add support to glm
+Sun Feng (24/10/2013)
+*/
 #ifndef __IGLU_SHADER_VARIABLE_H
 #define __IGLU_SHADER_VARIABLE_H
 
@@ -23,6 +26,8 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform2.hpp>
 
 //#include "igluShaderProgram.h"
 
@@ -83,6 +88,11 @@ public:
 	// From a 4x4 matrix
 	void operator= ( const IGLUMatrix4x4 &val );
 	void operator= ( const IGLUMatrix4x4 *val ); // So they need not be dereferenced
+	// add support to glm matrix
+	void operator= ( const glm::mat4 &val);
+	void operator= ( const glm::mat4 *val);
+	void operator= ( const glm::mat3 & val);
+	void operator= ( const glm::mat3 *val);
 
 	// Texture assignment
 	void operator= (   const IGLUTexture &val );  

@@ -18,6 +18,10 @@
 **                                                                       **
 ** Chris Wyman (06/14/2011)                                              **
 **************************************************************************/
+/*
+add support for tesselation shader
+Sun Feng(10/24/2013)
+*/
 
 #ifndef __IGLU_SHADER_PROGRAM_H
 #define __IGLU_SHADER_PROGRAM_H
@@ -41,11 +45,16 @@ public:
 	// Constructors that also call Load()
 	IGLUShaderProgram( const char *vShaderFile, const char *fShaderFile );
 	IGLUShaderProgram( const char *vShaderFile, const char *gShaderFile, const char *fShaderFile );
+	//add by sunf to support tesselation shader
+	IGLUShaderProgram( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFIle, const char *gShaderFile, const char *fShaderFile );
+	IGLUShaderProgram( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFIle, const char *fShaderFile );
 
 	// Create a shader based on a set of files
 	void Load( const char *vShaderFile, const char *fShaderFile );
 	void Load( const char *vShaderFile, const char *gShaderFile, const char *fShaderFile );
-
+	//add by sunf to support tesselation shader
+	void Load( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFIle, const char *gShaderFile, const char *fShaderFile );
+	void Load( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFIle, const char *fShaderFile );
 	// Create a shader based on a literal string of the shaders
 	void CreateFromString( const char *vShader, const char *fShader );
 	void CreateFromString( const char *vShader, const char *gShader, const char *fShader );

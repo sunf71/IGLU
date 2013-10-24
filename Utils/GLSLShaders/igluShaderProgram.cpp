@@ -19,7 +19,10 @@
 **                                                                       **
 ** Chris Wyman (06/14/2011)                                              **
 **************************************************************************/
-
+/*
+add support for tesselation shader
+Sun Feng(10/24/2013)
+*/
 #include "iglu.h"
 
 using namespace iglu;
@@ -59,7 +62,25 @@ IGLUShaderProgram::IGLUShaderProgram( const char *vShaderFile, const char *gShad
 	Load( vShaderFile, gShaderFile, fShaderFile );
 }
 
-
+//added by sunf to support tesselation shader
+IGLUShaderProgram::IGLUShaderProgram( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFile, const char *gShaderFile, const char *fShaderFile ) : 
+	m_currentlyEnabled(false), m_verbose(true),
+	m_invokeStateMask(0x0), m_invokeStateDisable(0x0), m_invokeStateEnable(0x0),
+	m_isLinked(false), m_programID(0)
+{ 
+	// Create a program
+	m_programID = glCreateProgram();
+	Load( vShaderFile, tcShaderFile, teShaderFile, gShaderFile, fShaderFile );
+}
+IGLUShaderProgram::IGLUShaderProgram( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFile,  const char *fShaderFile ) : 
+	m_currentlyEnabled(false), m_verbose(true),
+	m_invokeStateMask(0x0), m_invokeStateDisable(0x0), m_invokeStateEnable(0x0),
+	m_isLinked(false), m_programID(0)
+{ 
+	// Create a program
+	m_programID = glCreateProgram();
+	Load( vShaderFile, tcShaderFile, teShaderFile,  fShaderFile );
+}
 IGLUShaderProgram::~IGLUShaderProgram()                                   
 {
 	for ( uint i=0; i < m_activeTex.Size(); i++ )
@@ -122,6 +143,63 @@ void IGLUShaderProgram::Load( const char *vShaderFile, const char *gShaderFile, 
 	CopySemanticNames();
 }
 
+void IGLUShaderProgram::Load( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFile,  const char *gShaderFile, const char *fShaderFile )  
+{ 
+	// The default constructor cannot create a program ID, so check here...
+	if (!m_programID) m_programID = glCreateProgram();
+
+	// If we already loaded shader stages, get rid of them...
+	if (m_shaderStages.Size() > 0) m_shaderStages.SetSize( 0 );
+
+	// Load our shader stages
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_VERTEX, vShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_TESS_CONTROL, tcShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_TESS_EVAL, teShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_GEOMETRY, gShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_FRAGMENT, fShaderFile ) );
+
+	// Attach our shader stages & see if they requested any special GL state when invoked
+	for (uint i=0; i<m_shaderStages.Size(); i++)
+	{
+		glAttachShader( m_programID, m_shaderStages[i]->GetShaderID() );
+		SetProgramEnables( m_shaderStages[i]->GetShaderRequestedGLEnables() );
+		SetProgramDisables( m_shaderStages[i]->GetShaderRequestedGLDisables() );
+	}
+
+	// Link the shader stages together
+	Link();
+
+	// Copy in IGLU-specific semantics, so we know about them.
+	CopySemanticNames();
+}
+void IGLUShaderProgram::Load( const char *vShaderFile, const char *tcShaderFile, const char * teShaderFile,  const char *fShaderFile )  
+{ 
+	// The default constructor cannot create a program ID, so check here...
+	if (!m_programID) m_programID = glCreateProgram();
+
+	// If we already loaded shader stages, get rid of them...
+	if (m_shaderStages.Size() > 0) m_shaderStages.SetSize( 0 );
+
+	// Load our shader stages
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_VERTEX, vShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_TESS_CONTROL, tcShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_TESS_EVAL, teShaderFile ) );
+	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_FRAGMENT, fShaderFile ) );
+
+	// Attach our shader stages & see if they requested any special GL state when invoked
+	for (uint i=0; i<m_shaderStages.Size(); i++)
+	{
+		glAttachShader( m_programID, m_shaderStages[i]->GetShaderID() );
+		SetProgramEnables( m_shaderStages[i]->GetShaderRequestedGLEnables() );
+		SetProgramDisables( m_shaderStages[i]->GetShaderRequestedGLDisables() );
+	}
+
+	// Link the shader stages together
+	Link();
+
+	// Copy in IGLU-specific semantics, so we know about them.
+	CopySemanticNames();
+}
 void IGLUShaderProgram::CreateFromString( const char *vShader, const char *fShader )
 {
 	// The default constructor cannot create a program ID, so check here...
