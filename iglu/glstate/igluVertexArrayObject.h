@@ -86,7 +86,8 @@ public:
 	void MultiDrawArrays( GLenum mode, GLint *first, GLsizei *count, GLsizei primCount );
 	void DrawArraysInstanced( GLenum mode, GLint first, GLsizei count, GLsizei primCount, GLuint baseInstance=0 );
 	void DrawElements( GLenum mode, GLsizei count, GLuint bufOffsetBytes=0 );
-
+	//add by sunf draw elements instanced
+	void DrawElementsInstanced( GLenum mode, GLsizei count, GLsizei instanceNum, GLuint bufOffsetBytes=0);
 	// Transform feedback draw routine.  This should only be used if the internal buffers were
 	//    populated using OpenGL's transform feedback mechanism.  They draw the number of vertices
 	//    that were output in the last transform feedback stage.  ( e.g., if transform feedback  

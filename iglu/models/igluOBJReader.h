@@ -6,7 +6,10 @@
 /*                                                                */
 /* Chris Wyman (10/20/2011)                                       */
 /******************************************************************/
-
+/*
+add Geometry Instancing draw function
+Sun Feng 10/28/2013
+*/
 #ifndef IGLU_OBJ_READER_H
 #define IGLU_OBJ_READER_H
 
@@ -49,6 +52,14 @@ public:
 
 	// Implementation of the necessary IGLUModel virtual methods
 	virtual int Draw( IGLUShaderProgram::Ptr &shader );
+	//GI via Instance Data passed from vertex attribute array, InstanceBO is the IGLUBuffer contain instanceData
+	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUBuffer::Ptr &InstanceBO, int numOfInstances);
+	//GI via Instance Data passed from vertex attribute array, bufferId is the id of OpenGL Buffer
+	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, GLuint bufferId, int numOfInstances);
+	//GI via Instance Data passed from texture
+	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUTextureBuffer::Ptr &InstanceTex, int numOfInstances);
+	//GI via Instance Data passed from Uniform Buffer
+	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUUniformBuffer::Ptr &InstanceUni, int numOfInstances);
 	virtual bool HasVertices ( void ) const			{ return m_hasVertices; }
 	virtual bool HasTexCoords( void ) const         { return m_hasTexCoords; }
 	virtual bool HasNormals  ( void ) const         { return m_hasNormals; }
@@ -100,7 +111,8 @@ private:
 	// When drawing, sometimes we need to setup our vertex array to work with
 	//    the currently selected shader.  This method does that.
 	int SetupVertexArray( IGLUShaderProgram::Ptr &shader );
-
+	int SetupVertexArrayForGI(IGLUShaderProgram::Ptr &shader,  GLuint buffferId );
+	int SetupVertexArrayForGI(IGLUShaderProgram::Ptr &shader,  IGLUBuffer::Ptr &InstanceBO );
 	// Indicies in OBJ files may be relative (i.e., negative).  OBJ files also
 	//    use a Pascal array indexing scheme (i.e., start from 1).  These methods
 	//    fixes these issues to give an array index we can actually use.

@@ -612,7 +612,84 @@ void IGLUOBJReader::GetElementArrayBuffer( void )
 	// Free our temporary copy of the data
 	free( tmpBuf );
 }
+int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, IGLUBuffer::Ptr &InstanceBO)
+{
+	bool vertAvail = HasVertices();   // && (shader[ iglu::IGLU_ATTRIB_VERTEX ] != 0);
+	bool normAvail = HasNormals();    // && (shader[ iglu::IGLU_ATTRIB_NORMAL ] != 0);
+	bool texAvail  = HasTexCoords();  // && (shader[ iglu::IGLU_ATTRIB_TEXCOORD ] != 0);
+	bool matlAvail = HasMatlID();     // && (shader[ iglu::IGLU_ATTRIB_MATL_ID ] != 0);
+	bool objectAvail = HasObjectID(); // && (shader[iglu::IGLU_ATTRIB_OBJECT_ID] != 0);
 
+	// We need *at least* a vertex semantic
+	if (!vertAvail) return IGLU_ERROR_NO_GLSL_VERTEX_SEMANTIC;
+
+	// Setup the attributes needed for this geometry
+	m_vertArr->EnableAttribute( IGLU_ATTRIB_VERTEX, 3, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_vertOff));
+	if (normAvail)  m_vertArr->EnableAttribute( IGLU_ATTRIB_NORMAL, 
+		                                        3, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_normOff));
+	if (texAvail)   m_vertArr->EnableAttribute( IGLU_ATTRIB_TEXCOORD, 
+		                                        2, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_texOff));
+	if (matlAvail)  m_vertArr->EnableAttribute( IGLU_ATTRIB_MATL_ID, 
+		                                        1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_matlIdOff));
+	/*if(objectAvail) m_vertArr->EnableAttribute( IGLU_ATTRIB_OBJECT_ID, 
+                                                1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_objectIdOff));*/
+		// we bind here the instance data buffer
+	//InstanceBO->Bind();
+	m_vertArr->Bind();
+	GLuint id = InstanceBO->GetBufferID();
+	glBindBuffer(GL_ARRAY_BUFFER,id);
+	//InstanceBO->Bind();
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)0);
+
+	// we set up the vertex attribute divisor to 1 as we would like to step once for every instance
+	// we use the ARB version of the function as GLEW incorrectly misses the definition of core instanced arrays
+	glVertexAttribDivisorARB(4, 1);
+	//InstanceBO->Unbind();
+	m_vertArr->Unbind();
+	//InstanceBO->Unbind();
+	
+	return IGLU_NO_ERROR;
+}
+int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, GLuint bufferId)
+{
+	bool vertAvail = HasVertices();   // && (shader[ iglu::IGLU_ATTRIB_VERTEX ] != 0);
+	bool normAvail = HasNormals();    // && (shader[ iglu::IGLU_ATTRIB_NORMAL ] != 0);
+	bool texAvail  = HasTexCoords();  // && (shader[ iglu::IGLU_ATTRIB_TEXCOORD ] != 0);
+	bool matlAvail = HasMatlID();     // && (shader[ iglu::IGLU_ATTRIB_MATL_ID ] != 0);
+	bool objectAvail = HasObjectID(); // && (shader[iglu::IGLU_ATTRIB_OBJECT_ID] != 0);
+
+	// We need *at least* a vertex semantic
+	if (!vertAvail) return IGLU_ERROR_NO_GLSL_VERTEX_SEMANTIC;
+
+	// Setup the attributes needed for this geometry
+	m_vertArr->EnableAttribute( IGLU_ATTRIB_VERTEX, 3, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_vertOff));
+	if (normAvail)  m_vertArr->EnableAttribute( IGLU_ATTRIB_NORMAL, 
+		                                        3, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_normOff));
+	if (texAvail)   m_vertArr->EnableAttribute( IGLU_ATTRIB_TEXCOORD, 
+		                                        2, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_texOff));
+	if (matlAvail)  m_vertArr->EnableAttribute( IGLU_ATTRIB_MATL_ID, 
+		                                        1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_matlIdOff));
+	/*if(objectAvail) m_vertArr->EnableAttribute( IGLU_ATTRIB_OBJECT_ID, 
+                                                1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_objectIdOff));*/
+		// we bind here the instance data buffer
+	//InstanceBO->Bind();
+	m_vertArr->Bind();
+	
+	glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+	//InstanceBO->Bind();
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)0);
+
+	// we set up the vertex attribute divisor to 1 as we would like to step once for every instance
+	// we use the ARB version of the function as GLEW incorrectly misses the definition of core instanced arrays
+	glVertexAttribDivisorARB(4, 1);
+	//InstanceBO->Unbind();
+	m_vertArr->Unbind();
+	//InstanceBO->Unbind();
+	
+	return IGLU_NO_ERROR;
+}
 int IGLUOBJReader::SetupVertexArray( IGLUShaderProgram::Ptr & )//shader )
 {
 	//m_shaderID = shader->GetProgramID();
@@ -645,7 +722,111 @@ int IGLUOBJReader::SetupVertexArray( IGLUShaderProgram::Ptr & )//shader )
 	return IGLU_NO_ERROR;
 }
 
+int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader,  IGLUBuffer::Ptr &InstanceBO, int numOfInstances)
+{
+	// If the shader in question is not already enabled, enable it!
+	bool wasShaderBound = shader->IsEnabled();
+	if (!wasShaderBound)
+		shader->Enable();
 
+	// We may already have the vertex array setup to work with this shader.
+	//    Check that.  If not, re-set up the vertex array.
+	//if (m_shaderID != shader->GetProgramID())
+	if (m_shaderID == 0)
+	{
+		m_shaderID = shader->GetProgramID();
+		int err = this->SetupVertexArrayForGI( shader, InstanceBO);
+		if (err != IGLU_NO_ERROR)
+			return err;
+	}
+
+	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
+	// If we started with the shader disabled, disable it again now.
+	if (!wasShaderBound)
+		shader->Disable();
+
+	return IGLU_NO_ERROR;
+}
+
+int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader,  GLuint bufferId, int numOfInstances)
+{
+	// If the shader in question is not already enabled, enable it!
+	bool wasShaderBound = shader->IsEnabled();
+	if (!wasShaderBound)
+		shader->Enable();
+
+	// We may already have the vertex array setup to work with this shader.
+	//    Check that.  If not, re-set up the vertex array.
+	//if (m_shaderID != shader->GetProgramID())
+	if (m_shaderID == 0)
+	{
+		m_shaderID = shader->GetProgramID();
+		int err = this->SetupVertexArrayForGI( shader, bufferId);
+		if (err != IGLU_NO_ERROR)
+			return err;
+	}
+
+	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
+	// If we started with the shader disabled, disable it again now.
+	if (!wasShaderBound)
+		shader->Disable();
+
+	return IGLU_NO_ERROR;
+}
+
+//GI via Instance Data passed from texture
+int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUTextureBuffer::Ptr &InstanceTex, int numOfInstances)
+{
+	// If the shader in question is not already enabled, enable it!
+	bool wasShaderBound = shader->IsEnabled();
+	if (!wasShaderBound)
+		shader->Enable();
+
+	// We may already have the vertex array setup to work with this shader.
+	//    Check that.  If not, re-set up the vertex array.
+	//if (m_shaderID != shader->GetProgramID())
+	if (m_shaderID == 0)
+	{
+		m_shaderID = shader->GetProgramID();
+		int err = this->SetupVertexArray( shader);
+		shader["InstanceData"] = InstanceTex;
+		if (err != IGLU_NO_ERROR)
+			return err;
+	}
+
+	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
+	// If we started with the shader disabled, disable it again now.
+	if (!wasShaderBound)
+		shader->Disable();
+
+	return IGLU_NO_ERROR;
+}
+//GI via Instance Data passed from Uniform Buffer
+int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUUniformBuffer::Ptr &InstanceUni, int numOfInstances)
+{
+	// If the shader in question is not already enabled, enable it!
+	bool wasShaderBound = shader->IsEnabled();
+	if (!wasShaderBound)
+		shader->Enable();
+
+	// We may already have the vertex array setup to work with this shader.
+	//    Check that.  If not, re-set up the vertex array.
+	//if (m_shaderID != shader->GetProgramID())
+	if (m_shaderID == 0)
+	{
+		m_shaderID = shader->GetProgramID();
+		int err = this->SetupVertexArray( shader);
+		if (err != IGLU_NO_ERROR)
+			return err;
+	}
+
+	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
+	// If we started with the shader disabled, disable it again now.
+	if (!wasShaderBound)
+		shader->Disable();
+
+	return IGLU_NO_ERROR;
+}
 int IGLUOBJReader::Draw( IGLUShaderProgram::Ptr &shader )
 {
 	// If the shader in question is not already enabled, enable it!

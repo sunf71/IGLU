@@ -210,7 +210,22 @@ void IGLUVertexArray::DrawTransformFeedback( GLenum mode, const IGLUTransformFee
 
 	Internal_StopPrimRestart( primRestartEnabled );
 }
+void IGLUVertexArray::DrawElementsInstanced( GLenum mode, GLsizei count, GLsizei instanceNum, GLuint bufOffsetBytes)
+{
+		assert( m_elemArray );
+	bool primRestartEnabled = Internal_InitPrimRestart();
 
+	Bind();
+	if (!m_elementArrayBound)
+	{
+		m_elemArray->Bind();
+		m_elementArrayBound = true;
+	}
+	glDrawElementsInstanced( mode, count, m_elemType, BUFFER_OFFSET(bufOffsetBytes) ,instanceNum);
+	Unbind();
+
+	Internal_StopPrimRestart( primRestartEnabled );
+}
 void IGLUVertexArray::DrawElements( GLenum mode, GLsizei count, GLuint bufOffsetBytes )
 {
 	assert( m_elemArray );
