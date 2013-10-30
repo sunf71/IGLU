@@ -58,8 +58,8 @@ public:
 	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, GLuint bufferId, int numOfInstances);
 	//GI via Instance Data passed from texture
 	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUTextureBuffer::Ptr &InstanceTex, int numOfInstances);
-	//GI via Instance Data passed from Uniform Buffer
-	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUUniformBuffer::Ptr &InstanceUni, int numOfInstances);
+	//GI via Instance Data passed from Uniform Buffer, note the uniform buffer should be set up before calling this method 
+	virtual int DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, int numOfInstances);
 	virtual bool HasVertices ( void ) const			{ return m_hasVertices; }
 	virtual bool HasTexCoords( void ) const         { return m_hasTexCoords; }
 	virtual bool HasNormals  ( void ) const         { return m_hasNormals; }

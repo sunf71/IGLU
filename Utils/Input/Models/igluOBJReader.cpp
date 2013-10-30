@@ -793,7 +793,7 @@ int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUTe
 		if (err != IGLU_NO_ERROR)
 			return err;
 	}
-
+	
 	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
 	// If we started with the shader disabled, disable it again now.
 	if (!wasShaderBound)
@@ -802,7 +802,7 @@ int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUTe
 	return IGLU_NO_ERROR;
 }
 //GI via Instance Data passed from Uniform Buffer
-int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUUniformBuffer::Ptr &InstanceUni, int numOfInstances)
+int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader,  int numOfInstances)
 {
 	// If the shader in question is not already enabled, enable it!
 	bool wasShaderBound = shader->IsEnabled();
@@ -815,11 +815,12 @@ int IGLUOBJReader::DrawMultipleInstances(IGLUShaderProgram::Ptr & shader, IGLUUn
 	if (m_shaderID == 0)
 	{
 		m_shaderID = shader->GetProgramID();
-		int err = this->SetupVertexArray( shader);
+		int err = this->SetupVertexArray( shader);		
+		
+		
 		if (err != IGLU_NO_ERROR)
 			return err;
 	}
-
 	m_vertArr->DrawElementsInstanced(GL_TRIANGLES, 3* GetTriangleCount(),numOfInstances);
 	// If we started with the shader disabled, disable it again now.
 	if (!wasShaderBound)
