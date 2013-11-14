@@ -137,7 +137,8 @@ protected:
 	bool IsDepthFormat( GLenum imgFormat ) const;
 };
 
-
+//add IGLU_TEXTURE_REPEAT for models with repeat texture(sponza)
+//sunf
 // Some common flags we'll be using for out texture classes.
 enum {
 	IGLU_FLAGS_NONE            = 0x000000,
@@ -166,7 +167,8 @@ enum {
 	IGLU_IMAGE_READ 		   = 0x400000,
 	IGLU_IMAGE_WRITE           = 0x800000,
 	IGLU_IMAGE_READ_WRITE	   = IGLU_IMAGE_READ | IGLU_IMAGE_WRITE,
-	IGLU_TEXTURE_DEFAULT       = IGLU_COMPRESS_TEXTURE | IGLU_MIN_LINEAR | IGLU_MAG_LINEAR | IGLU_CLAMP_TO_EDGE_S | IGLU_CLAMP_TO_EDGE_T
+	IGLU_TEXTURE_DEFAULT       = IGLU_COMPRESS_TEXTURE | IGLU_MIN_LINEAR | IGLU_MAG_LINEAR | IGLU_CLAMP_TO_EDGE_S | IGLU_CLAMP_TO_EDGE_T,
+	IGLU_TEXTURE_REPEAT      =  IGLU_COMPRESS_TEXTURE | IGLU_MIN_LINEAR | IGLU_MAG_LINEAR | IGLU_REPEAT_S | IGLU_REPEAT_T
 };
 
 // End namespace iglu

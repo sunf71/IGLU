@@ -124,6 +124,8 @@ void IGLUTexture2D::Initialize( void )
 						   m_texImg->GetWidth(), m_texImg->GetHeight(), 0,
 						   m_texImg->GetGLFormat(), m_texImg->GetGLDatatype(), 
 						   (void *)m_texImg->ImageData() );
+	GLenum error = glGetError(	);
+
 	if (m_mipmapsNeeded)
 		glGenerateMipmap( GL_TEXTURE_2D );
 

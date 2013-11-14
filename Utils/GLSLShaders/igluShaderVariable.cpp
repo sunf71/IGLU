@@ -700,6 +700,8 @@ bool iglu::IGLUShaderVariable::HasImageTypeMismatch(const IGLUTexture *rhsTex){
 
 bool iglu::IGLUShaderVariable::HasTextureTypeMismatch( const IGLUTexture *rhsTex )
 {
+	//add by sunf
+	assert(rhsTex);
 	// We can never do *assignment* to GLSL attributes.  (Especially for textures!)
 	if ( m_isAttribute )
 		return AssignmentToAttribute( "sampler" );
@@ -768,7 +770,7 @@ bool iglu::IGLUShaderVariable::HasTextureTypeMismatch( const IGLUTexture *rhsTex
 void IGLUShaderVariable::operator= ( const IGLUTexture *val )
 {
 	// Check for a valid shader index (else we have no variable to assign to!)
-	if ( m_varIdx < 0 ) return;
+	if ( val == NULL || m_varIdx < 0 ) return;
 	
 	//Depending on whether we are binding image
 	IGLUArray1D<IGLUShaderTexture *> *parentArr = 0;

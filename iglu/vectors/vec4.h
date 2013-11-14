@@ -75,6 +75,8 @@ public:
 	inline float *GetDataPtr()					{ return d; }
 	inline const float *GetConstDataPtr() const	{ return d; }
 
+	inline float& operator[]  (int id)	         {return d[id];}
+
 	// Complex accessor functions
 	inline vec3 xyz() const                     { return vec3( d[0], d[1], d[2] ); }
 	inline vec3 xzy() const                     { return vec3( d[0], d[2], d[0] ); }

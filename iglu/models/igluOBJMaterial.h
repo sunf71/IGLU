@@ -57,7 +57,8 @@ public:
 	// Once ALL OBJ & MTL files have been processed, the following method 
 	// should be called, to create the textures that are used in IGLU shaders
 	//////////////////////////////////////////////////////////////////////////
-	static bool FinalizeMaterialsForRendering( void );
+	//modified by sunf, handle different texture format(repeat for sponza model)
+	static bool FinalizeMaterialsForRendering( GLuint TextureFormat = IGLU_TEXTURE_DEFAULT );
 
 	//////////////////////////////////////////////////////////////////////////
 	// After calling the FinalizeMaterialsForRendering() method, the following

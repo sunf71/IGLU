@@ -56,7 +56,7 @@ public:
     inline vec3& operator+=(const vec3& v);
     inline vec3 operator-() const;
     inline vec3 operator-(const vec3& v) const;
-
+	
 	// Dot and cross products
     inline vec3 Cross(const vec3& v) const;
     inline float Dot(const vec3& v) const;
@@ -68,7 +68,8 @@ public:
 	inline float GetElement( int i ) const		{ return d[i]; }
 	inline float *GetDataPtr()					{ return d; }
 	inline const float *GetConstDataPtr() const	{ return d; }
-
+	//easier get and set function added bu sunf
+	inline float& operator[](int  idx) { return d[idx];}
 	// Static methods.  Useful for defining commonly used vectors
 	static vec3 Zero( void )  { return vec3(0,0,0); }
 	static vec3 One( void )   { return vec3(1,1,1); }

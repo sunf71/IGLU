@@ -84,7 +84,7 @@ char *IGLUFileParser::__ReadLine( void )
 {
 	if (m_closed) 
 		return 0;
-	char *ptr = fgets(internalBuf, 1023, f);
+	char *ptr = fgets(internalBuf, 2048, f);
 	if (ptr) lineNum++;
 	return ptr;
 }

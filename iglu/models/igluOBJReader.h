@@ -20,7 +20,12 @@ Sun Feng 10/28/2013
 #include "iglu/glstate/igluVertexArrayObject.h"
 
 namespace iglu {
-
+struct IGLUOBJTri
+{
+	IGLUOBJTri(char *m, char *g, char*o) : mtlName(m), grpName(g), objName(o) {}
+	int vIdx[3], nIdx[3], tIdx[3], matlID, objectID;
+	char *mtlName, *grpName, *objName;
+};
 enum IGLUModelParams {
 	IGLU_OBJ_DEFAULT_STATE      = 0x0000,
 	IGLU_OBJ_CENTER             = 0x0001,  // Recenter model around the origin
@@ -69,6 +74,23 @@ public:
 	// A pointer to a IGLUOBJReader could have type IGLUOBJReader::Ptr
 	typedef IGLUOBJReader *Ptr;
 
+	IGLUArray1D<vec3>& GetVertecies()
+	{
+		return m_objVerts;
+	}
+
+	IGLUArray1D<IGLUOBJTri *>& GetTriangles()
+	{
+		return m_objTris;
+	}
+	IGLUArray1D<vec3>& GetNormals()
+	{
+		return m_objNorms;
+	}
+	IGLUArray1D<vec2>& GetTexCoords()
+	{
+		return m_objTexCoords;
+	}
 private:
 	bool m_compactFormat, m_loadMtlFile, m_assignObjects;
 	uint  m_curMatlId;

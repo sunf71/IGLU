@@ -12,14 +12,7 @@
 
 using namespace iglu;
 
-namespace iglu {
-struct IGLUOBJTri
-{
-	IGLUOBJTri(char *m, char *g, char*o) : mtlName(m), grpName(g), objName(o) {}
-	int vIdx[3], nIdx[3], tIdx[3], matlID, objectID;
-	char *mtlName, *grpName, *objName;
-};
-} 
+
 
 IGLUOBJReader::IGLUOBJReader( char *filename, int params ) :
 	IGLUFileParser( filename ), IGLUModel(), m_vertArr(0),
@@ -49,6 +42,8 @@ IGLUOBJReader::IGLUOBJReader( char *filename, int params ) :
 	int tmpMatlId, tmpObjId;
 	while ( (linePtr = this->ReadNextLine()) != NULL )
 	{
+		if (GetLineNumber() > 151087)
+		printf("%d\n",GetLineNumber()); 
 		// Each OBJ line starts with a keyword/keyletter
 		this->GetLowerCaseToken( keyword );
 		

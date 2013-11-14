@@ -22,6 +22,8 @@
 /*
 add support for tesselation shader
 Sun Feng(10/24/2013)
+add support for transform feedback without fragment shader
+Sun Feng(10/31/2013)
 */
 #include "iglu.h"
 
@@ -51,6 +53,7 @@ IGLUShaderProgram::IGLUShaderProgram( const char *vShaderFile, const char *fShad
 	m_programID = glCreateProgram();
 	Load( vShaderFile, fShaderFile );
 }
+
 
 IGLUShaderProgram::IGLUShaderProgram( const char *vShaderFile, const char *gShaderFile, const char *fShaderFile ) : 
 	m_currentlyEnabled(false), m_verbose(true),
@@ -114,7 +117,7 @@ void IGLUShaderProgram::Load( const char *vShaderFile, const char *fShaderFile )
 	CopySemanticNames();
 }
 
-
+//modified by sunf to support program with only vertex shader and geometry shader used in transform feedback
 void IGLUShaderProgram::Load( const char *vShaderFile, const char *gShaderFile, const char *fShaderFile )  
 { 
 	// The default constructor cannot create a program ID, so check here...
@@ -126,7 +129,10 @@ void IGLUShaderProgram::Load( const char *vShaderFile, const char *gShaderFile, 
 	// Load our shader stages
 	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_VERTEX, vShaderFile ) );
 	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_GEOMETRY, gShaderFile ) );
-	m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_FRAGMENT, fShaderFile ) );
+	if (fShaderFile != NULL)
+	{
+		m_shaderStages.Add( new IGLUShaderStage( IGLU_SHADER_FROM_FILE | IGLU_SHADER_FRAGMENT, fShaderFile ) );
+	}
 
 	// Attach our shader stages & see if they requested any special GL state when invoked
 	for (uint i=0; i<m_shaderStages.Size(); i++)

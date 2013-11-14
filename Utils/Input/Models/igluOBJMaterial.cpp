@@ -82,12 +82,12 @@ int IGLUOBJMaterialReader::GetNamedMaterialId( char *mtlName )
 	return -1;
 }
 
-bool IGLUOBJMaterialReader::FinalizeMaterialsForRendering( void )
+bool IGLUOBJMaterialReader::FinalizeMaterialsForRendering( GLuint textureFormat )
 {
 	// Create a Texture2DArray to hold all of our material textures...  We'll create it by rendering into it.
 	if (s_matlTexture.Size() > 0)
 	{
-		s_matlTexArray = new IGLURenderTexture2DArray( 512, 512, s_matlTexture.Size() );
+		s_matlTexArray = new IGLURenderTexture2DArray( 512, 512, s_matlTexture.Size(), GL_RGBA8, textureFormat );
 		matlArrFBO = new IGLUFramebuffer();
 		matlArrFBO->AttachTexture( IGLU_COLOR0, (IGLURenderTexture *)s_matlTexArray );
 
