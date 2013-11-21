@@ -474,6 +474,9 @@
     <ClCompile Include="Datatypes\UIVars\igluVariable.cpp">
       <Filter>Source Files\DataTypes\UIVars</Filter>
     </ClCompile>
+    <ClCompile Include="glmModel.cpp">
+      <Filter>Source Files\Utils\Input\Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h">
@@ -751,6 +754,9 @@
     </ClInclude>
     <ClInclude Include="iglu\variables\igluVariable.h">
       <Filter>Header Files\Datatypes\UIVars</Filter>
+    </ClInclude>
+    <ClInclude Include="glmModel.h">
+      <Filter>Header Files\Utils\Input\Models</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

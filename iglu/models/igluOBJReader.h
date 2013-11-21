@@ -10,15 +10,24 @@
 add Geometry Instancing draw function
 Sun Feng 10/28/2013
 */
+/*
+simply replace IGLU1DARRAY  with STL vector
+Sun Feng 11/14/2013
+*/
+
+/*
+add glm construction fuction, code from Nate Robins, 1997  
+*/
 #ifndef IGLU_OBJ_READER_H
 #define IGLU_OBJ_READER_H
 
 #pragma warning( disable: 4996 )
 
-#include "iglu/igluArray1D.h"
+
 #include "igluModel.h"
 #include "iglu/glstate/igluVertexArrayObject.h"
-
+#include "glmModel.h"
+#include <vector>
 namespace iglu {
 struct IGLUOBJTri
 {
@@ -44,10 +53,12 @@ class IGLUOBJReader : public IGLUFileParser, public IGLUModel
 public:
 	// Constructor reads from the file.
 	IGLUOBJReader( char *filename, int params=IGLU_OBJ_DEFAULT_STATE );
+	// Constructor from GLMmodel
+	IGLUOBJReader( GLMmodel* model, int parms = IGLU_OBJ_DEFAULT_STATE);
 	virtual ~IGLUOBJReader();
 
 	// Get some data about the object file
-	uint GetTriangleCount( void ) const       { return m_objTris.Size(); }
+	uint GetTriangleCount( void ) const       { return m_objTris.size(); }
 
 	// Get OpenGL buffers for vertex/triangle/normal data
 	IGLUVertexArray::Ptr &GetVertexArray( void )         { return m_vertArr; }
@@ -74,20 +85,20 @@ public:
 	// A pointer to a IGLUOBJReader could have type IGLUOBJReader::Ptr
 	typedef IGLUOBJReader *Ptr;
 
-	IGLUArray1D<vec3>& GetVertecies()
+	std::vector<vec3>& GetVertecies()
 	{
 		return m_objVerts;
 	}
 
-	IGLUArray1D<IGLUOBJTri *>& GetTriangles()
+	std::vector<IGLUOBJTri *>& GetTriangles()
 	{
 		return m_objTris;
 	}
-	IGLUArray1D<vec3>& GetNormals()
+	std::vector<vec3>& GetNormals()
 	{
 		return m_objNorms;
 	}
-	IGLUArray1D<vec2>& GetTexCoords()
+	std::vector<vec2>& GetTexCoords()
 	{
 		return m_objTexCoords;
 	}
@@ -105,19 +116,19 @@ private:
 	IGLUVertexArray::Ptr m_vertArr;
 
 	// Basic geometric definitions
-	IGLUArray1D<vec3> m_objVerts;
-	IGLUArray1D<vec3> m_objNorms;
-	IGLUArray1D<vec2> m_objTexCoords;
+	std::vector<vec3> m_objVerts;
+	std::vector<vec3> m_objNorms;
+	std::vector<vec2> m_objTexCoords;
 
 	// Basic geometric triangles definitions
-	IGLUArray1D<IGLUOBJTri *> m_objTris;
-
+	std::vector<IGLUOBJTri *> m_objTris;
+	
 	// Locations for material file(s)
-	IGLUArray1D<char *> m_objMtlFiles;
+	std::vector<char *> m_objMtlFiles;
 
 
 	// Array of object names inside the file
-	IGLUArray1D<char *> m_objObjectNames;
+	std::vector<char *> m_objObjectNames;
 
 	// Does the user want us to resize and center the object around the origin?
 	//    Some/many models use completely arbitrary coordinates, so it's difficult
@@ -164,7 +175,7 @@ private:
 
 	// Copy from prior triangle facets when triangulating
 	void CopyForTriangleFan( IGLUOBJTri *newTri );
-
+	void CopyForTriangleFan( const IGLUOBJTri * lastTri, IGLUOBJTri* newTri);
 	// A method that is called after finding an 'f' line that identifies
 	//    the appropriate Read_???_Token() method to call when parsing
 	void SelectReadMethod( FnParserPtr *pPtr );
@@ -175,6 +186,8 @@ private:
 	
 	//Determines if objName has been seen before in this obj file
 	int GetObjectID( char *objName );
+
+	
 };
 
 

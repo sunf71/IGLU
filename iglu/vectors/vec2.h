@@ -66,7 +66,8 @@ public:
 	inline float GetElement( int i ) const		{ return d[i]; }
 	inline float *GetDataPtr()					{ return d; }
 	inline const float *GetConstDataPtr() const	{ return d; }
-
+	//easy get and set add by sunf
+	inline float& operator[](int id)            { return d[id];}
 	// Static methods.  Useful for defining commonly used vectors
 	static vec2 Zero( void )				{ return vec2(0,0); }
 	static vec2 One( void )					{ return vec2(1,1); }

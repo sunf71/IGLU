@@ -33,7 +33,8 @@ public:
 	vec3 m_trans;                // Tf from MTL file
 	float m_reflSharpness;       // sharpness from MTL file
 };
-
+void InitializeMaterial( IGLUOBJMaterial *mtl );
+void AddDefaultMaterial( void );
 class IGLUOBJMaterialReader : public IGLUFileParser
 {
 public:

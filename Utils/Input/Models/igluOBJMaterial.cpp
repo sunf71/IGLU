@@ -20,13 +20,13 @@ IGLUTextureBuffer::Ptr           IGLUOBJMaterialReader::s_matlCoefBuf;
 IGLUTexture::Ptr                 IGLUOBJMaterialReader::s_matlTexArray;    
 
 
-namespace { // anonymous namespace for stuff used inside this file.
+// namespace { anonymous namespace for stuff used inside this file.
 
 // This is essentially the constructor for our material structure.  
 //      We're hiding it here, for no particularly good reason.
 //      It's somewhat inefficient, but keeps our definition 
 //      looking like a struct
-void InitializeMaterial( IGLUOBJMaterial *mtl )
+void iglu::InitializeMaterial( IGLUOBJMaterial *mtl )
 {
 	if (!mtl) return;
 	mtl->m_matlName      = 0;
@@ -43,7 +43,7 @@ void InitializeMaterial( IGLUOBJMaterial *mtl )
 	mtl->m_shininess     = 1;
 }
 
-void AddDefaultMaterial( void )
+void iglu::AddDefaultMaterial( void )
 {
 	// Only want to add a default material at the beginning
 	if (IGLUOBJMaterialReader::s_matl.Size() > 0)
@@ -51,7 +51,7 @@ void AddDefaultMaterial( void )
 
 	// Create a new material for our default
 	IGLUOBJMaterialReader::s_matl.Add( new IGLUOBJMaterial() );
-	InitializeMaterial( IGLUOBJMaterialReader::s_matl[0] );
+	iglu::InitializeMaterial( IGLUOBJMaterialReader::s_matl[0] );
 	IGLUOBJMaterialReader::s_matl[0]->m_matlName = strdup( "__DEFAULT__" );	
 	IGLUOBJMaterialReader::s_matl[0]->m_amb      = vec3(0.1);
 	IGLUOBJMaterialReader::s_matl[0]->m_dif      = vec3(0.9);
@@ -62,7 +62,7 @@ IGLUFramebuffer::Ptr    matlArrFBO      = 0;    // A FBO to contain 's_matlTexAr
 IGLUShaderProgram::Ptr  createTexArray  = 0;    // The shader used to create 's_matlTexArray'
 IGLUBuffer::Ptr         mtlBuf          = 0;    // A buffer used as the storage for 's_matlCoefBuf'
 
-};  // End: anonymous namespace to hide globals inside this file
+//};   End: anonymous namespace to hide globals inside this file
 
 
 IGLUOBJMaterial *IGLUOBJMaterialReader::GetNamedMaterial( char *mtlName )

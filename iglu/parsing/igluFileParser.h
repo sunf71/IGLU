@@ -117,7 +117,7 @@ protected:
 	bool m_closed;
 	int lineNum;
 	char *fileName, *unqualifiedFileName, *fileDirectory;
-	char internalBuf[ 1024 ], *internalBufPtr;
+	char internalBuf[ 2048 ], *internalBufPtr;
 
 	// A simple call to fgets, storing data internally, and increment our line counter
 	char *__ReadLine( void );

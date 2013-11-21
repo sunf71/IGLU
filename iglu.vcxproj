@@ -70,13 +70,14 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>glew32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="glmModel.cpp" />
     <ClCompile Include="Utils\Math\igluColors.cpp" />
     <ClCompile Include="Utils\Math\igluMath.cpp" />
     <ClCompile Include="Utils\Math\igluOrthoNormalBasis.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="Datatypes\UIVars\igluVariable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="glmModel.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jdct.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jerror.h" />
