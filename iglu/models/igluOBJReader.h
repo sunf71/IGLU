@@ -102,6 +102,10 @@ public:
 	{
 		return m_objTexCoords;
 	}
+	uint* GetElementArrayData()
+	{
+		return m_elementArray;
+	}
 private:
 	bool m_compactFormat, m_loadMtlFile, m_assignObjects;
 	uint  m_curMatlId;
@@ -118,8 +122,9 @@ private:
 	// Basic geometric definitions
 	std::vector<vec3> m_objVerts;
 	std::vector<vec3> m_objNorms;
-	std::vector<vec2> m_objTexCoords;
-
+	std::vector<vec2> m_objTexCoords;	
+	//VAO ÖÐµÄelement array
+	uint* m_elementArray;
 	// Basic geometric triangles definitions
 	std::vector<IGLUOBJTri *> m_objTris;
 	

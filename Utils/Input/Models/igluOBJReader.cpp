@@ -297,6 +297,8 @@ IGLUOBJReader::~IGLUOBJReader()
 
 	// Get rid of our vertex array
 	delete m_vertArr;
+
+	free(m_elementArray);
 }
 
 unsigned int IGLUOBJReader::GetVertexIndex( int relativeIdx )
@@ -557,12 +559,21 @@ void IGLUOBJReader::CenterAndResize( float *arr, int numVerts )
 	                1 );
 
 	// Walk through the vertex array and update the positions
-	for (int i=0; i<numVerts; i++)
+	//Update the m_objVerts
+	for (int i=0,j=0; i<numVerts; i++,j++)
 	{
 		int idx = startIdx + i*vertStride;
 		arr[idx+0] = (arr[idx+0] - ctrX ) / delta;
 		arr[idx+1] = (arr[idx+1] - ctrY ) / delta;
 		arr[idx+2] = (arr[idx+2] - ctrZ ) / delta;
+	
+	}
+
+	for(int i=0; i<m_objVerts.size(); i++)
+	{
+		m_objVerts[i][0] = (m_objVerts[i][0]-ctrX) / delta;
+		m_objVerts[i][1] = (m_objVerts[i][1]-ctrY) / delta;
+		m_objVerts[i][2] = (m_objVerts[i][2]-ctrZ) / delta;
 	}
 }
 
@@ -598,7 +609,7 @@ void IGLUOBJReader::GetCompactArrayBuffer( void )
 
 	// Create an element array buffer to fill up
 	uint elembufSz = 3 * sizeof( unsigned int ) * m_objTris.size();
-	uint *tmpElemBuf = (uint *)malloc( elembufSz );
+	uint *tmpElemBuf = m_elementArray = (uint *)malloc( elembufSz );
 
 	// We'll need to know the size of our two arrays
 	int numArrayElements = 3 * m_objTris.size();  // Known in advance
@@ -672,7 +683,7 @@ void IGLUOBJReader::GetCompactArrayBuffer( void )
 
 	// Free our temporary copy of the data
 	free( tmpBuf );
-	free( tmpElemBuf );
+	//free( tmpElemBuf );
 	free( vertMapping );
 	
 }
@@ -742,7 +753,7 @@ void IGLUOBJReader::GetElementArrayBuffer( void )
 	uint bufSz = 3 * sizeof( unsigned int ) * m_objTris.size();
 
 	// Create a buffer for us to fill up.
-	uint *tmpBuf = (uint *)malloc( bufSz );
+	uint *tmpBuf = m_elementArray= (uint *)malloc( bufSz );
 
 	// For our very, very early reader, we'll use the MOST NAIVE approach
 	for (uint i=0; i<3*m_objTris.size(); i++)
@@ -752,7 +763,7 @@ void IGLUOBJReader::GetElementArrayBuffer( void )
 	m_vertArr->SetElementArray( GL_UNSIGNED_INT, bufSz, tmpBuf, IGLU_STATIC|IGLU_DRAW );
 
 	// Free our temporary copy of the data
-	free( tmpBuf );
+	//free( tmpBuf );
 }
 int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, IGLUBuffer::Ptr &InstanceBO)
 {
