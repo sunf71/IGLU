@@ -126,6 +126,8 @@
 #include "iglu/window/igluWidgetWindow.h"
 #include "iglu/window/igluMultiDisplayWidgetWindow.h"
 
+
+
 template<typename T> void safe_delete(T*& a) 
 {
 	if ( a != NULL)

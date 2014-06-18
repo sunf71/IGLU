@@ -477,6 +477,12 @@
     <ClCompile Include="glmModel.cpp">
       <Filter>Source Files\Utils\Input\Models</Filter>
     </ClCompile>
+    <ClCompile Include="iglu\igluApp.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="iglu\SceneHelper.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h">
@@ -757,6 +763,15 @@
     </ClInclude>
     <ClInclude Include="glmModel.h">
       <Filter>Header Files\Utils\Input\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\Camera.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\igluApp.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="iglu\SceneHelper.h">
+      <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

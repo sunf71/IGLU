@@ -78,6 +78,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glmModel.cpp" />
+    <ClCompile Include="iglu\igluApp.cpp" />
+    <ClCompile Include="iglu\SceneHelper.cpp" />
     <ClCompile Include="Utils\Math\igluColors.cpp" />
     <ClCompile Include="Utils\Math\igluMath.cpp" />
     <ClCompile Include="Utils\Math\igluOrthoNormalBasis.cpp" />
@@ -187,6 +189,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glmModel.h" />
+    <ClInclude Include="iglu\Camera.h" />
+    <ClInclude Include="iglu\igluApp.h" />
+    <ClInclude Include="iglu\SceneHelper.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jconfig.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jdct.h" />
     <ClInclude Include="Utils\Input\Images\jpeg\jerror.h" />
