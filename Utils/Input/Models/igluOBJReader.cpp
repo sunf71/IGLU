@@ -786,12 +786,9 @@ int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, IGLUB
 		                                        1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_matlIdOff));
 	if(objectAvail) m_vertArr->EnableAttribute( IGLU_ATTRIB_OBJECT_ID, 
                                                 1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_objectIdOff));
-		// we bind here the instance data buffer
-	//InstanceBO->Bind();
-	m_vertArr->Bind();
-	GLuint id = InstanceBO->GetBufferID();
-	glBindBuffer(GL_ARRAY_BUFFER,id);
-	//InstanceBO->Bind();
+	// we bind here the instance data buffer
+	InstanceBO->Bind();
+
 	glEnableVertexAttribArray(5);
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float)*8, (void*)0);
 
@@ -801,9 +798,8 @@ int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, IGLUB
 	glEnableVertexAttribArray(6);
 	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float)*8, (void*)(4*sizeof(float)));
 	glVertexAttribDivisorARB(6, 1);
-	//InstanceBO->Unbind();
-	m_vertArr->Unbind();
-	//InstanceBO->Unbind();
+
+	InstanceBO->Unbind();
 	
 	return IGLU_NO_ERROR;
 }

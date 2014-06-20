@@ -52,6 +52,7 @@ public:
 	virtual void SetVertexArray       ( GLsizeiptr bufSize,   void *bufData=0,    int use = IGLU_DYNAMIC | IGLU_DRAW );
 	virtual void SetVertexArraySubset ( GLintptr   bufOffset, GLsizeiptr subSize, void *subData );
 
+	IGLUBuffer::Ptr& GetElementArray(void) { return this->m_elemArray; }
 	virtual void SetElementArray      ( GLenum elemType, GLsizeiptr bufSize,   void *bufData=0,    int use = IGLU_DYNAMIC | IGLU_DRAW );
 	virtual void SetElementArraySubset( GLintptr   bufOffset, GLsizeiptr subSize, void *subData );
 
