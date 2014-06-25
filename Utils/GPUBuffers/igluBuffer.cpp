@@ -127,6 +127,8 @@ GLenum IGLUBuffer::ConvertToGLType      ( BufferType type )
 		return GL_TEXTURE_BUFFER;
 	case IGLU_UNIFORM:
 		return GL_UNIFORM_BUFFER;
+	case IGLU_DRAW_INDIRECT:
+		return GL_DRAW_INDIRECT_BUFFER;
 	}
 
 	// Should not happen.  Return a reasonable default.

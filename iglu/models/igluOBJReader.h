@@ -102,6 +102,10 @@ public:
 	{
 		return m_objTexCoords;
 	}
+	std::vector<float>& GetVaoVerts()
+	{
+		return m_vaoVerts;
+	}
 	uint* GetElementArrayData()
 	{
 		return m_elementArray;
@@ -123,6 +127,8 @@ private:
 	std::vector<vec3> m_objVerts;
 	std::vector<vec3> m_objNorms;
 	std::vector<vec2> m_objTexCoords;	
+	//保存在VAO中的顶点
+	std::vector<float> m_vaoVerts;
 	//VAO 中的element array
 	uint* m_elementArray;
 	// Basic geometric triangles definitions

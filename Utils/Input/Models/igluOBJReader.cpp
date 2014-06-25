@@ -503,10 +503,10 @@ void IGLUOBJReader::AddDataToArray( float *arr, int startIdx, int matlID, int ob
 	arr[i++] = m_assignObjects ? float(objectID) : 0.0f;
 
 	// push_back the vertex
-	arr[i++] = vert->X();
-	arr[i++] = vert->Y();
-	arr[i++] = vert->Z();
-
+	m_vaoVerts.push_back(arr[i++] = vert->X());
+	m_vaoVerts.push_back(arr[i++] = vert->Y());
+	m_vaoVerts.push_back(arr[i++] = vert->Z());
+	
 	// If this vertex has a normal, push_back it.
 	if (norm)
 	{

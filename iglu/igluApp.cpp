@@ -144,7 +144,7 @@ namespace iglu
 					IGLUOBJReader::Ptr objReader;
 					if (mesh->getUnitizeFlag())
 					{
-						objReader  = new IGLUOBJReader( (char*)mesh->getObjFileName().c_str(), IGLU_OBJ_UNITIZE);
+						objReader  = new IGLUOBJReader( (char*)mesh->getObjFileName().c_str(), IGLU_OBJ_UNITIZE | IGLU_OBJ_COMPACT_STORAGE);
 
 					}
 					else
