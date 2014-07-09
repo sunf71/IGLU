@@ -117,6 +117,7 @@ namespace iglu
 		{
 			_type = SceneObjType::mesh;
 			_unitizeFlag = false;
+			_compactFlag = true;
 		}
 		ObjModelObject(char* name, FILE* f);
 
@@ -133,8 +134,17 @@ namespace iglu
 		{
 			_unitizeFlag = flag;
 		}
+		bool getCompactFlag()
+		{
+			return _compactFlag;
+		}
+		void setCompact(bool flag)
+		{
+			_compactFlag = flag;
+		}
 	private:
 		bool _unitizeFlag;
+		bool _compactFlag;
 		std::string _objFileName;
 	};
 

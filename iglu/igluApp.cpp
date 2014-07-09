@@ -142,15 +142,9 @@ namespace iglu
 				{
 					ObjModelObject* mesh = (ObjModelObject*)obj;				
 					IGLUOBJReader::Ptr objReader;
-					if (mesh->getUnitizeFlag())
-					{
-						objReader  = new IGLUOBJReader( (char*)mesh->getObjFileName().c_str(), IGLU_OBJ_UNITIZE | IGLU_OBJ_COMPACT_STORAGE);
-
-					}
-					else
-					{
-						objReader  = new IGLUOBJReader( (char*)mesh->getObjFileName().c_str(),IGLU_OBJ_COMPACT_STORAGE);
-					}
+					int params = mesh->getCompactFlag() ? IGLU_OBJ_COMPACT_STORAGE : 0;					
+					params |=mesh->getUnitizeFlag() ?  IGLU_OBJ_UNITIZE : 0;
+					objReader  = new IGLUOBJReader( (char*)mesh->getObjFileName().c_str(), params);
 					_objReaders.push_back(objReader);
 					glm::mat4 trans = mesh->getTransform();			
 					_objTransforms.push_back(IGLUMatrix4x4(&trans[0][0]));				

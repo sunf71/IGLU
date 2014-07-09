@@ -787,6 +787,7 @@ int IGLUOBJReader::SetupVertexArrayForGI( IGLUShaderProgram::Ptr & shader, IGLUB
 	if(objectAvail) m_vertArr->EnableAttribute( IGLU_ATTRIB_OBJECT_ID, 
                                                 1, GL_FLOAT, m_vertStride, BUFFER_OFFSET(m_objectIdOff));
 	// we bind here the instance data buffer
+	m_vertArr->Bind();
 	InstanceBO->Bind();
 
 	glEnableVertexAttribArray(5);

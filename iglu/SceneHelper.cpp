@@ -281,6 +281,13 @@ namespace iglu
 				if (!strcmp(token,"true"))
 					_unitizeFlag = true;
 			}
+			else if(!strcmp(token,"compact"))
+			{
+				ptr = StripLeadingTokenToBuffer( ptr, token );
+				MakeLower( token );
+				if (!strcmp(token,"false"))
+					_compactFlag = false;
+			}
 		}
 	}
 
