@@ -567,6 +567,9 @@ void IGLUOBJReader::CenterAndResize( float *arr, int numVerts )
 		arr[idx+1] = (arr[idx+1] - ctrY ) / delta;
 		arr[idx+2] = (arr[idx+2] - ctrZ ) / delta;
 	
+		m_vaoVerts[i*3] = (m_vaoVerts[i*3] -  ctrX) / delta;
+		m_vaoVerts[i*3+1] = (m_vaoVerts[i*3+1] -  ctrX) / delta;
+		m_vaoVerts[i*3+2] = (m_vaoVerts[i*3+2] -  ctrX) / delta;
 	}
 
 	for(int i=0; i<m_objVerts.size(); i++)

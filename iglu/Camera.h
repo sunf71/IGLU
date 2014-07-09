@@ -2,6 +2,8 @@
 #define CAMERA_H
 #include "SceneHelper.h"
 #include "iglu.h"
+#include<glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 namespace iglu {
 
 	class Camera
@@ -114,6 +116,16 @@ namespace iglu {
 		{
 			vec4 eye = _trackBall->GetMatrix()*vec4(_eye,1);
 			return eye.xyz()/eye.W();
+		}
+		vec3 GetEyePos()
+		{
+			IGLUMatrix4x4 mat = _vm * _trackBall->GetMatrix();
+			glm::mat4 a_modelView = glm::make_mat4(mat.GetDataPtr());
+			glm::mat3 rotMat(a_modelView);
+			glm::vec3 d(a_modelView[3]);
+
+			glm::vec3 retVec = -d * rotMat;
+			return vec3(&retVec[0]);
 		}
 		const vec3& GetUp()
 		{
